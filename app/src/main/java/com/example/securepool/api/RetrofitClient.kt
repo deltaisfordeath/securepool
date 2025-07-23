@@ -1,6 +1,7 @@
 package com.example.securepool.api
 
 import android.content.Context
+import com.example.securepool.security.CertificatePinning
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -11,8 +12,8 @@ object RetrofitClient {
     fun create(context: Context): SecurePoolService {
         val tokenManager = TokenManager(context)
 
-        // Create an OkHttpClient and add BOTH the interceptor and the authenticator
-        val okHttpClient = OkHttpClient.Builder()
+        // Create a secure OkHttpClient with certificate pinning
+        val okHttpClient = CertificatePinning.createSecureClient(context)
             .addInterceptor(AuthInterceptor(tokenManager)) // Adds token to every request
             .authenticator(TokenAuthenticator(tokenManager, context)) // Handles 401 errors
             .build()

@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.example.securepool.BiometricKeyManager
 import com.example.securepool.GameActivity
 import com.example.securepool.LeaderboardActivity
 import com.example.securepool.PracticeActivity
@@ -78,6 +79,11 @@ fun SecurePoolHomeScreen(
 
                 Button(onClick = { context.startActivity(Intent(context, LeaderboardActivity::class.java)) }) {
                     Text("Show Ranking")
+                }
+                Button(onClick = {
+                    val biometricKeyManager = BiometricKeyManager(context)
+                }) {
+                    Text("Enable Biometric Login")
                 }
             }
         }

@@ -1,8 +1,9 @@
 import express, { json } from 'express';
 import cors from 'cors';
-import moment from 'moment'; // ⏱️ Timestamp formatting
+import moment from 'moment';
 import initializeDatabase from './initializeDatabase.js';
 import https from 'https';
+import { Server } from 'socket.io';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -351,4 +352,59 @@ server.on('error', (err) => {
 
 server.listen(443, '0.0.0.0', () => {
   console.log('🚀 Server running on port 443');
+});
+
+const wss = new Server(server);
+
+wss.use((socket, next) => {
+  const authHeader = socket.handshake.auth.token;
+
+  if (!authHeader) {
+    console.warn('❌ Authentication failed: No token provided.');
+
+    const error = new Error('Authentication failed: No token provided.');
+    error.data = { message: 'No authentication token found. Please provide a JWT.' };
+    return next(error);
+  }
+
+  const tokenParts = authHeader.split(' ');
+  if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+    console.warn('❌ Authentication failed: Invalid token format.');
+    const error = new Error('Authentication failed: Invalid token format.');
+    error.data = { message: 'Token must be in "Bearer <token>" format.' };
+    return next(error);
+  }
+
+  const token = tokenParts[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    socket.userData = decoded;
+    console.log(`✅ Client ${socket.id} authenticated. User ID: ${decoded.userId || 'N/A'}`);
+
+    next();
+  } catch (err) {
+    console.warn(`❌ Authentication failed: Invalid token. Error: ${err.message}`);
+    const error = new Error('Authentication failed: Invalid token.');
+    error.data = { message: 'Invalid or expired authentication token.' };
+    return next(error); // Reject the connection
+  }
+});
+
+wss.on('connection', (socket) => {
+  console.log('🔌 Socket.IO client connected');
+  console.log('Client ID:', socket.id);
+
+  socket.emit('serverMessage', '📡 Hello from SecurePool Socket.IO server!');
+
+  socket.on('message', (data) => {
+    console.log('📩 Received from client:', data.toString());
+    // Echo the message back to the client that sent it
+    socket.emit('serverMessage', `🔁 Echo: ${data}`);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log(`🔌 Socket.IO client disconnected: ${reason}`);
+  });
 });

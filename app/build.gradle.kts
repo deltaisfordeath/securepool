@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// 🔐 Access secret from gradle.properties or environment
+val mySecretKey: String? = project.findProperty("MY_SECRET_KEY") as String?
+
 android {
     namespace = "com.example.securepool"
     compileSdk = 36
@@ -16,6 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // ✅ Make secret accessible in Kotlin code via BuildConfig
+        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey}\"")
     }
 
     buildTypes {
@@ -38,6 +44,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -53,6 +60,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    implementation("io.socket:socket.io-client:2.1.2")
+// Use the latest stable version
+// The socket.io-client library internally uses OkHttp, so ensure you have a compatible version
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+// Use a recent stable version
 
     // ✅ Compose BOM and UI components
     implementation(platform(libs.androidx.compose.bom))

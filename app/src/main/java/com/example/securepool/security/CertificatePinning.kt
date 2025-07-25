@@ -53,8 +53,8 @@ object CertificatePinning {
      */
     private fun getCertificatePinner(): CertificatePinner {
         return CertificatePinner.Builder()
-            .add("10.0.2.2", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
-            .add("localhost", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
+            .add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+            .add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
             .build()
     }
     

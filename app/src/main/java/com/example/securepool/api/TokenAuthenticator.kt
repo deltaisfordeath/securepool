@@ -20,7 +20,7 @@ class TokenAuthenticator constructor(
             val refreshToken = tokenManager.getRefreshToken()
 
             // If the request already has the latest token, or we have no refresh token, we can't proceed.
-            if (accessToken == null || refreshToken == null || response.request().header("Authorization") == "Bearer $accessToken") {
+            if (accessToken == null || refreshToken == null || response.request.header("Authorization") == "Bearer $accessToken") {
                 return null // Give up, authentication is not possible.
             }
 
@@ -35,7 +35,7 @@ class TokenAuthenticator constructor(
                 tokenManager.saveTokens(newTokens.accessToken, newTokens.refreshToken)
 
                 // Retry the original request with the new access token
-                response.request().newBuilder()
+                response.request.newBuilder()
                     .header("Authorization", "Bearer ${newTokens.accessToken}")
                     .build()
             } else {

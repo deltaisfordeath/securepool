@@ -71,7 +71,7 @@ Purpose: To design an insecure Android application, identify and model threats, 
    
    # Install on device/emulator
    adb install app/build/outputs/apk/debug/app-debug.apk
-   ```
+   ```n20+
 
 3. **Monitor Certificate Pinning:**
    ```bash

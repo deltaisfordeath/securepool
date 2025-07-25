@@ -119,7 +119,35 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loginUser() {
-        // ... (implementation unchanged)
+        val currentState = _uiState.value
+        if (currentState.username.isBlank() || currentState.password.isBlank()) {
+            Toast.makeText(getApplication(), "Username and password cannot be empty.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        _uiState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            try {
+                val request = RegisterRequest(currentState.username, currentState.password)
+                val response = apiService.loginUser(request)
+                val body = response.body()
+
+                if (response.isSuccessful && body != null) {
+                    tokenManager.saveTokens(body.accessToken, body.refreshToken)
+                    tokenManager.saveUsername(body.username)
+                    // Emit a navigation event instead of updating state
+                    _navigationEvent.emit(NavigationEvent.NavigateToHome)
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Login failed"
+                    Toast.makeText(getApplication(), errorMessage, Toast.LENGTH_LONG).show()
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
     }
 
     fun registerUser() {

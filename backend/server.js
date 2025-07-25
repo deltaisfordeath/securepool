@@ -3,6 +3,7 @@ import cors from 'cors';
 import moment from 'moment'; // ⏱️ Timestamp formatting
 import initializeDatabase from './initializeDatabase.js';
 import https from 'https';
+import { WebSocketServer } from 'ws';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -232,4 +233,17 @@ server.on('error', (err) => {
 
 server.listen(443, '0.0.0.0', () => {
   console.log('🚀 Server running on port 443');
+});
+
+const wss = new WebSocketServer({ server });
+
+wss.on('connection', function connection(ws) {
+  console.log('🔌 WebSocket client connected');
+
+  ws.on('message', function message(data) {
+    console.log('📩 Received:', data.toString());
+    ws.send(`🔁 Echo: ${data}`);
+  });
+
+  ws.send('📡 Hello from SecurePool WebSocket server!');
 });

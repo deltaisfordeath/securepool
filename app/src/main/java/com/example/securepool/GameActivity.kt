@@ -1,3 +1,4 @@
+
 package com.example.securepool
 
 import android.os.Bundle
@@ -15,8 +16,13 @@ import com.example.securepool.ui.model.GameUiState
 import com.example.securepool.ui.model.GameViewModel
 import com.example.securepool.ui.model.GameViewModelFactory
 import com.example.securepool.ui.theme.SecurePoolTheme
+import com.example.securepool.api.SecureWebSocketClient
+
 
 class GameActivity : ComponentActivity() {
+
+    private lateinit var socketClient: SecureWebSocketClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -24,6 +30,16 @@ class GameActivity : ComponentActivity() {
             finish()
             return
         }
+
+
+        // Initialize and connect WebSocket
+        socketClient = SecureWebSocketClient("your_token_here")
+        socketClient.connect()
+
+        // Optional: Send hello message to opponent
+        socketClient.send("Hello ${opponentUsername} from ${socketClient.hashCode()}")
+
+
 
         val viewModel: GameViewModel by viewModels {
             GameViewModelFactory(application, opponentUsername)
@@ -40,6 +56,11 @@ class GameActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        socketClient.disconnect() // ✅ Gracefully close WebSocket
     }
 }
 

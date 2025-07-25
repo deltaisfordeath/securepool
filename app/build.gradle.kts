@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// 🔐 Access secret from gradle.properties or environment
+val mySecretKey: String? = project.findProperty("MY_SECRET_KEY") as String?
+
 android {
     namespace = "com.example.securepool"
     compileSdk = 36
@@ -16,6 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // ✅ Make secret accessible in Kotlin code via BuildConfig
+        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey}\"")
     }
 
     buildTypes {
@@ -38,6 +44,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }

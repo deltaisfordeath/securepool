@@ -2,6 +2,7 @@ package com.example.securepool
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -28,6 +29,11 @@ class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Load and log secret key from BuildConfig (for testing only)
+        val secretKey = BuildConfig.MY_SECRET_KEY
+        Log.d("SECUREPOOL", "Loaded secret: $secretKey")
+
         setContent {
             SecurePoolTheme {
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,7 +80,10 @@ fun LoginScreen(
         topBar = { TopAppBar(title = { Text("SecurePool Login") }) },
     ) { padding ->
         Column(
-            modifier = Modifier.padding(padding).padding(24.dp).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .padding(24.dp)
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(

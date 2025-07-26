@@ -13,8 +13,9 @@ Purpose: To design an insecure Android application, identify and model threats, 
 
 ## Backend Server  
 - From the `backend` directory, run `npm install`  
-- Update the `connectionProperties` object in `initializeDatabase.js` to the correct port, user, and password for your MySQL installation (insecure hard coded credentials will be patched in v2).   
-- Run `npm run start`  
+- Run `cp .env.example .env` to copy the template .env file.
+- Populate the `.env` file with your secret keys and connection properties (can be left as-is for dev environment)  
+- Run `npm run start` to start the server, or `npm run dev` for hot reloading of server.js changes.
 
 ## Android Application
 - Copy `securepool_cert.pem` from `backend\dev_cert` to your emulated Android device in Android Studio by dragging it to the virtual device's screen.  

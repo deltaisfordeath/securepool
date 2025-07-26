@@ -19,9 +19,9 @@ const options = {
 };
 
 // TODO: Replace these with unique secret keys from environment variables
-const JWT_SECRET = 'your-super-secret-key-for-jwt';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRATION = '15m';
-const REFRESH_TOKEN_SECRET = 'your-super-secret-refresh-key';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 const CHALLENGE_DURATION = 15 * 1000 * 60;
 

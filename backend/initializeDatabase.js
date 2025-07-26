@@ -1,14 +1,14 @@
 import { createConnection } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 
-const database_name = "securepool_db";
+const database_name = process.env.DB_NAME;
 
 const connectionProperties = {
-            host: 'localhost',
-            port: 3306,
-            user: 'root',
-            password: 'abcdef', // 🔒 Replace with your actual password
-        }
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, // 🔒 Replace with your actual password
+}
 
 // TODO: update table to allow for biometric registration
 const createUserTableQuery = `
@@ -63,7 +63,7 @@ export default async function initializeDatabase() {
         console.log('Connected to MySQL database.');
 
         await connection.execute(`CREATE DATABASE IF NOT EXISTS ${database_name}`);
-        
+
         await connection.query(`USE \`${database_name}\`;`);
 
         await connection.connect();

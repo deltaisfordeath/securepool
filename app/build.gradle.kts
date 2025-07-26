@@ -4,8 +4,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// 🔐 Access secret from gradle.properties or environment
+// Access secrets from gradle.properties or environment
 val mySecretKey: String? = project.findProperty("MY_SECRET_KEY") as String?
+val certPinDev: String? = project.findProperty("CERT_PIN_DEV") as String?
+val certPinProd: String? = project.findProperty("CERT_PIN_PROD") as String?
+val useDynamicPinning: String? = project.findProperty("USE_DYNAMIC_PINNING") as String?
+val debugDisableCertPinning: String? = project.findProperty("DEBUG_DISABLE_CERT_PINNING") as String?
+val productionDomain: String? = project.findProperty("PRODUCTION_DOMAIN") as String?
+val configServerUrl: String? = project.findProperty("CONFIG_SERVER_URL") as String?
 
 android {
     namespace = "com.example.securepool"
@@ -20,17 +26,29 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // ✅ Make secret accessible in Kotlin code via BuildConfig
-        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey}\"")
+        // Make secrets accessible in Kotlin code via BuildConfig
+        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey ?: ""}\"")
+        buildConfigField("String", "CERT_PIN_DEV", "\"${certPinDev ?: ""}\"")
+        buildConfigField("String", "CERT_PIN_PROD", "\"${certPinProd ?: ""}\"")
+        buildConfigField("String", "PRODUCTION_DOMAIN", "\"${productionDomain ?: "your-production-domain.com"}\"")
+        buildConfigField("String", "CONFIG_SERVER_URL", "\"${configServerUrl ?: ""}\"")
+        buildConfigField("boolean", "USE_DYNAMIC_PINNING", "${useDynamicPinning?.toBoolean() ?: false}")
     }
 
     buildTypes {
+        debug {
+            // Debug-only: Allow disabling certificate pinning for development/testing
+            buildConfigField("boolean", "DEBUG_DISABLE_CERT_PINNING", "${debugDisableCertPinning?.toBoolean() ?: false}")
+        }
+        
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production: Certificate pinning is ALWAYS enabled
+            buildConfigField("boolean", "DEBUG_DISABLE_CERT_PINNING", "false")
         }
     }
 
@@ -50,13 +68,13 @@ android {
 }
 
 dependencies {
-    // ✅ Retrofit & JSON converter
+    // Retrofit & JSON converter
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     implementation("androidx.biometric:biometric:1.1.0")
 
-    // ✅ Jetpack Compose + Core
+    // Jetpack Compose + Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -67,17 +85,17 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 // Use a recent stable version
 
-    // ✅ Compose BOM and UI components
+    // Compose BOM and UI components
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // ✅ Material Icons (🔧 Added for Visibility toggles)
+    // Material Icons (Added for Visibility toggles)
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
-    // ✅ Testing
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

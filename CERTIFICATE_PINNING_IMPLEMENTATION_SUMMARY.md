@@ -7,7 +7,7 @@ Certificate pinning has been successfully implemented for the SecurePool Android
 
 ### Core Security Components
 1. **CertificatePinning.kt** - Main implementation with:
-   - SHA-256 certificate pinning using hash: `LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=`
+   - SHA-256 certificate pinning using hash: `bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=`
    - Custom trust manager for enhanced security
    - Hostname verification for `10.0.2.2` and `localhost`
    - Development/production configuration flags
@@ -41,7 +41,7 @@ Certificate pinning has been successfully implemented for the SecurePool Android
 
 ### Certificate Hash (Generated with OpenSSL)
 ```
-SHA-256: LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=
+SHA-256: bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=
 ```
 
 ### Pinned Hosts

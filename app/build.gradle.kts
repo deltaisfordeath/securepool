@@ -4,8 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// 🔐 Access secret from gradle.properties or environment
+// 🔐 Access secrets from gradle.properties or environment
 val mySecretKey: String? = project.findProperty("MY_SECRET_KEY") as String?
+val certPinDev: String? = project.findProperty("CERT_PIN_DEV") as String?
+val certPinProd: String? = project.findProperty("CERT_PIN_PROD") as String?
+val useDynamicPinning: String? = project.findProperty("USE_DYNAMIC_PINNING") as String?
+val debugDisableCertPinning: String? = project.findProperty("DEBUG_DISABLE_CERT_PINNING") as String?
 
 android {
     namespace = "com.example.securepool"
@@ -20,17 +24,27 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // ✅ Make secret accessible in Kotlin code via BuildConfig
-        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey}\"")
+        // ✅ Make secrets accessible in Kotlin code via BuildConfig
+        buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey ?: ""}\"")
+        buildConfigField("String", "CERT_PIN_DEV", "\"${certPinDev ?: ""}\"")
+        buildConfigField("String", "CERT_PIN_PROD", "\"${certPinProd ?: ""}\"")
+        buildConfigField("boolean", "USE_DYNAMIC_PINNING", "${useDynamicPinning?.toBoolean() ?: false}")
     }
 
     buildTypes {
+        debug {
+            // Debug-only: Allow disabling certificate pinning for development/testing
+            buildConfigField("boolean", "DEBUG_DISABLE_CERT_PINNING", "${debugDisableCertPinning?.toBoolean() ?: false}")
+        }
+        
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production: Certificate pinning is ALWAYS enabled
+            buildConfigField("boolean", "DEBUG_DISABLE_CERT_PINNING", "false")
         }
     }
 

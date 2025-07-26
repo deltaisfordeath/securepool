@@ -1,0 +1,11 @@
+# gradle.properties - External Certificate Configuration
+# Add these to your gradle.properties file (NOT committed to git)
+
+# Development certificate pin (without sha256/ prefix)
+CERT_PIN_DEV=bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=
+
+# Production certificate pin (without sha256/ prefix)  
+CERT_PIN_PROD=your-production-certificate-hash-here
+
+# Other existing properties...
+MY_SECRET_KEY=abc123-dev-secret

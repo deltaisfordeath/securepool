@@ -2,6 +2,7 @@ package com.example.securepool.security
 
 import android.content.Context
 import android.util.Log
+import com.example.securepool.BuildConfig
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import java.security.KeyStore
@@ -12,7 +13,6 @@ import javax.net.ssl.*
 object CertificatePinning {
     
     private const val TAG = "CertificatePinning"
-    private const val ENABLE_CERTIFICATE_PINNING = true // Set to false to disable during development
     
     /**
      * Creates an OkHttpClient with certificate pinning enabled.
@@ -22,14 +22,16 @@ object CertificatePinning {
     fun createSecureClient(context: Context): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
         
-        if (!ENABLE_CERTIFICATE_PINNING) {
-            Log.w(TAG, "Certificate pinning is DISABLED - only use in development!")
+        // Debug-only disable check - NEVER active in production builds
+        if (BuildConfig.DEBUG && BuildConfig.DEBUG_DISABLE_CERT_PINNING) {
+            Log.w(TAG, "⚠️ Certificate pinning is DISABLED - DEBUG BUILD ONLY!")
+            Log.w(TAG, "This should NEVER happen in production builds")
             return builder
         }
         
         return try {
-            // Method 1: Certificate Pinning using SHA-256 public key hash
-            val certificatePinner = getCertificatePinner()
+            // Method 1: Dynamic Certificate Pinning
+            val certificatePinner = getCertificatePinner(context)
             
             // Method 2: Custom Trust Manager (more secure for development/testing)
             val trustManager = createCustomTrustManager(context)
@@ -43,19 +45,42 @@ object CertificatePinning {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to setup certificate pinning: ${e.message}", e)
             // Fallback to basic certificate pinning only
-            builder.certificatePinner(getCertificatePinner())
+            builder.certificatePinner(getCertificatePinner(context))
         }
     }
     
     /**
-     * Creates a certificate pinner with the SHA-256 hash of your certificate's public key.
-     * Hash generated using OpenSSL from securepool_cert.pem
+     * Creates a certificate pinner with build-time configuration.
+     * Uses certificate hashes from gradle.properties for flexible management.
      */
-    private fun getCertificatePinner(): CertificatePinner {
-        return CertificatePinner.Builder()
-            .add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
-            .add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
-            .build()
+    private fun getCertificatePinner(context: Context): CertificatePinner {
+        Log.d(TAG, "Creating certificate pinner with build-time configuration")
+        
+        val builder = CertificatePinner.Builder()
+        
+        // Add development certificate pins
+        if (BuildConfig.CERT_PIN_DEV.isNotEmpty()) {
+            val devPin = "sha256/${BuildConfig.CERT_PIN_DEV}"
+            builder.add("10.0.2.2", devPin)
+            builder.add("localhost", devPin)
+            Log.d(TAG, "Added development certificate pin for 10.0.2.2 and localhost")
+        }
+        
+        // Add production certificate pins
+        if (BuildConfig.CERT_PIN_PROD.isNotEmpty()) {
+            val prodPin = "sha256/${BuildConfig.CERT_PIN_PROD}"
+            builder.add("your-production-domain.com", prodPin)  // Update with your production domain
+            Log.d(TAG, "Added production certificate pin")
+        }
+        
+        // Fallback to hardcoded pins if no build config is available
+        if (BuildConfig.CERT_PIN_DEV.isEmpty() && BuildConfig.CERT_PIN_PROD.isEmpty()) {
+            Log.w(TAG, "No certificate pins found in build config, using fallback")
+            builder.add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+            builder.add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+        }
+        
+        return builder.build()
     }
     
     /**

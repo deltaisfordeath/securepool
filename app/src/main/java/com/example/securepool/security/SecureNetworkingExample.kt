@@ -38,9 +38,9 @@ class SecureNetworkingExample {
      */
     fun verifyCertificateConfiguration() {
         println("=== Certificate Pinning Configuration ===")
-        println("Development Pin: ${if (BuildConfig.CERT_PIN_DEV.isNotEmpty()) "✅ Configured" else "❌ Missing"}")
-        println("Production Pin: ${if (BuildConfig.CERT_PIN_PROD.isNotEmpty()) "✅ Configured" else "⚠️ Not Set"}")
-        println("Dynamic Pinning: ${if (BuildConfig.USE_DYNAMIC_PINNING) "✅ Enabled" else "❌ Disabled"}")
+        println("Development Pin: ${if (BuildConfig.CERT_PIN_DEV.isNotEmpty()) "CONFIGURED" else "MISSING"}")
+        println("Production Pin: ${if (BuildConfig.CERT_PIN_PROD.isNotEmpty()) "CONFIGURED" else "NOT_SET"}")
+        println("Dynamic Pinning: ${if (BuildConfig.USE_DYNAMIC_PINNING) "ENABLED" else "DISABLED"}")
         println("Build Type: ${if (BuildConfig.DEBUG) "Debug" else "Release"}")
         
         // Log the configured pins (be careful with this in production)

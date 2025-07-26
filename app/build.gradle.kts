@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// 🔐 Access secrets from gradle.properties or environment
+// Access secrets from gradle.properties or environment
 val mySecretKey: String? = project.findProperty("MY_SECRET_KEY") as String?
 val certPinDev: String? = project.findProperty("CERT_PIN_DEV") as String?
 val certPinProd: String? = project.findProperty("CERT_PIN_PROD") as String?
@@ -26,7 +26,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // ✅ Make secrets accessible in Kotlin code via BuildConfig
+        // Make secrets accessible in Kotlin code via BuildConfig
         buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey ?: ""}\"")
         buildConfigField("String", "CERT_PIN_DEV", "\"${certPinDev ?: ""}\"")
         buildConfigField("String", "CERT_PIN_PROD", "\"${certPinProd ?: ""}\"")
@@ -68,13 +68,13 @@ android {
 }
 
 dependencies {
-    // ✅ Retrofit & JSON converter
+    // Retrofit & JSON converter
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     implementation("androidx.biometric:biometric:1.1.0")
 
-    // ✅ Jetpack Compose + Core
+    // Jetpack Compose + Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -85,17 +85,17 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 // Use a recent stable version
 
-    // ✅ Compose BOM and UI components
+    // Compose BOM and UI components
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // ✅ Material Icons (🔧 Added for Visibility toggles)
+    // Material Icons (Added for Visibility toggles)
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
-    // ✅ Testing
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

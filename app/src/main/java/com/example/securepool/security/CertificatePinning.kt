@@ -66,18 +66,30 @@ object CertificatePinning {
             Log.d(TAG, "Added development certificate pin for 10.0.2.2 and localhost")
         }
         
-        // Add production certificate pins
-        if (BuildConfig.CERT_PIN_PROD.isNotEmpty()) {
+        // Add production certificate pins (validate not a placeholder)
+        if (BuildConfig.CERT_PIN_PROD.isNotEmpty() && 
+            !BuildConfig.CERT_PIN_PROD.startsWith("PLACEHOLDER") &&
+            !BuildConfig.PRODUCTION_DOMAIN.contains("your-production-domain")) {
             val prodPin = "sha256/${BuildConfig.CERT_PIN_PROD}"
-            builder.add(BuildConfig.PRODUCTION_DOMAIN, prodPin)  // Use dynamic production domain
+            builder.add(BuildConfig.PRODUCTION_DOMAIN, prodPin)
             Log.d(TAG, "Added production certificate pin for ${BuildConfig.PRODUCTION_DOMAIN}")
+        } else if (BuildConfig.CERT_PIN_PROD.startsWith("PLACEHOLDER")) {
+            Log.w(TAG, "Production certificate pin is a placeholder - not added to pinning configuration")
+        } else if (BuildConfig.PRODUCTION_DOMAIN.contains("your-production-domain")) {
+            Log.w(TAG, "Production domain is a placeholder - not added to pinning configuration")
         }
         
-        // Fallback to hardcoded pins if no build config is available
-        if (BuildConfig.CERT_PIN_DEV.isEmpty() && BuildConfig.CERT_PIN_PROD.isEmpty()) {
-            Log.w(TAG, "No certificate pins found in build config, using fallback")
-            builder.add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
-            builder.add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+        // Emergency fallback - should only be used for development
+        if (BuildConfig.CERT_PIN_DEV.isEmpty() && 
+            (BuildConfig.CERT_PIN_PROD.isEmpty() || BuildConfig.CERT_PIN_PROD.startsWith("PLACEHOLDER"))) {
+            if (BuildConfig.DEBUG) {
+                Log.w(TAG, "Using emergency development fallback pins - FOR DEVELOPMENT ONLY")
+                builder.add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+                builder.add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+            } else {
+                Log.e(TAG, "No valid certificate pins configured for production build - this is a configuration error")
+                throw IllegalStateException("Certificate pinning cannot be initialized: no valid pins configured")
+            }
         }
         
         return builder.build()
@@ -106,11 +118,15 @@ object CertificatePinning {
     }
     
     /**
-     * Creates a hostname verifier that accepts our specific hostnames.
+     * Creates a hostname verifier that accepts our configured hostnames.
      */
     private fun createHostnameVerifier(): HostnameVerifier {
         return HostnameVerifier { hostname, _ ->
-            val isValid = hostname == "10.0.2.2" || hostname == "localhost"
+            val isValid = hostname == "10.0.2.2" || 
+                         hostname == "localhost" ||
+                         (BuildConfig.PRODUCTION_DOMAIN.isNotEmpty() && 
+                          !BuildConfig.PRODUCTION_DOMAIN.contains("your-production-domain") &&
+                          hostname == BuildConfig.PRODUCTION_DOMAIN)
             if (!isValid) {
                 Log.w(TAG, "Hostname verification failed for: $hostname")
             }

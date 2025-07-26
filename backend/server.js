@@ -66,7 +66,7 @@ app.use((req, res, next) => {
 const db = await initializeDatabase();
 
 app.get('/', (req, res) => {
-  res.send('🔗 SecurePool backend is running');
+  res.send('SecurePool backend is running');
 });
 
 app.post('/api/register', async (req, res) => {
@@ -85,7 +85,7 @@ app.post('/api/register', async (req, res) => {
     const [existingUsers] = await db.query(checkSql, [username]);
 
     if (existingUsers.length > 0) {
-      return res.json({ success: false, message: 'Username already exists' }); // 🚫 Username already exists
+      return res.json({ success: false, message: 'Username already exists' }); // Username already exists
     }
 
     const insertSql = 'INSERT INTO users SET username = ?, password = ?, score = 100, publicKey = ?';
@@ -241,7 +241,7 @@ app.post('/api/challenge', async (req, res) => {
   }
 });
 
-// 📊 Get score + formatted timestamp
+// Get score + formatted timestamp
 app.get('/api/score', verifyJwt, async (req, res) => {
   const { username } = req.query;
   if (!username) {
@@ -356,7 +356,7 @@ server.on('error', (err) => {
 });
 
 server.listen(443, '0.0.0.0', () => {
-  console.log('🚀 Server running on port 443');
+  console.log('Server running on port 443');
 });
 
 const wss = new Server(server);
@@ -365,7 +365,7 @@ wss.use((socket, next) => {
   const authHeader = socket.handshake.auth.token;
 
   if (!authHeader) {
-    console.warn('❌ Authentication failed: No token provided.');
+    console.warn('Authentication failed: No token provided.');
 
     const error = new Error('Authentication failed: No token provided.');
     error.data = { message: 'No authentication token found. Please provide a JWT.' };
@@ -374,7 +374,7 @@ wss.use((socket, next) => {
 
   const tokenParts = authHeader.split(' ');
   if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
-    console.warn('❌ Authentication failed: Invalid token format.');
+    console.warn('Authentication failed: Invalid token format.');
     const error = new Error('Authentication failed: Invalid token format.');
     error.data = { message: 'Token must be in "Bearer <token>" format.' };
     return next(error);
@@ -386,11 +386,11 @@ wss.use((socket, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     socket.userData = decoded;
-    console.log(`✅ Client ${socket.id} authenticated. User ID: ${decoded.userId || 'N/A'}`);
+    console.log(`Client ${socket.id} authenticated. User ID: ${decoded.userId || 'N/A'}`);
 
     next();
   } catch (err) {
-    console.warn(`❌ Authentication failed: Invalid token. Error: ${err.message}`);
+    console.warn(`Authentication failed: Invalid token. Error: ${err.message}`);
     const error = new Error('Authentication failed: Invalid token.');
     error.data = { message: 'Invalid or expired authentication token.' };
     return next(error); // Reject the connection
@@ -398,18 +398,18 @@ wss.use((socket, next) => {
 });
 
 wss.on('connection', (socket) => {
-  console.log('🔌 Socket.IO client connected');
+  console.log('Socket.IO client connected');
   console.log('Client ID:', socket.id);
 
-  socket.emit('serverMessage', '📡 Hello from SecurePool Socket.IO server!');
+  socket.emit('serverMessage', 'Hello from SecurePool Socket.IO server!');
 
   socket.on('message', (data) => {
-    console.log('📩 Received from client:', data.toString());
+    console.log('Received from client:', data.toString());
     // Echo the message back to the client that sent it
-    socket.emit('serverMessage', `🔁 Echo: ${data}`);
+    socket.emit('serverMessage', `Echo: ${data}`);
   });
 
   socket.on('disconnect', (reason) => {
-    console.log(`🔌 Socket.IO client disconnected: ${reason}`);
+    console.log(`Socket.IO client disconnected: ${reason}`);
   });
 });

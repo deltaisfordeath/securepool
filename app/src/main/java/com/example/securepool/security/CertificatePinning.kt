@@ -24,7 +24,7 @@ object CertificatePinning {
         
         // Debug-only disable check - NEVER active in production builds
         if (BuildConfig.DEBUG && BuildConfig.DEBUG_DISABLE_CERT_PINNING) {
-            Log.w(TAG, "⚠️ Certificate pinning is DISABLED - DEBUG BUILD ONLY!")
+            Log.w(TAG, "WARNING: Certificate pinning is DISABLED - DEBUG BUILD ONLY!")
             Log.w(TAG, "This should NEVER happen in production builds")
             return builder
         }

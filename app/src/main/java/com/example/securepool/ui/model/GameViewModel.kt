@@ -1,8 +1,10 @@
 package com.example.securepool.ui.model
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.example.securepool.api.RetrofitClient
+import com.example.securepool.api.SecureWebSocketClient
 import com.example.securepool.api.TokenManager
 import com.example.securepool.model.MatchResultRequest
 import com.example.securepool.ui.NavigationEvent
@@ -32,8 +34,22 @@ class GameViewModel(
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
+    private val socketClient: SecureWebSocketClient
+
     init {
         loadInitialScores()
+        // Initialize and connect WebSocket
+        socketClient = SecureWebSocketClient(getApplication())
+        socketClient.connect()
+
+        // Optional: Send hello message to opponent
+        socketClient.send("Hello $opponentUsername from ${socketClient.hashCode()}")
+    }
+
+    fun sendMessage() {
+        Toast.makeText(getApplication(), "Sending message over websocket...", Toast.LENGTH_SHORT).show()
+
+        socketClient.send("This is a message from ${uiState.value.playerUsername}")
     }
 
     private fun loadInitialScores() {
@@ -81,6 +97,7 @@ class GameViewModel(
                 // Handle network error
             } finally {
                 onGameEnd()
+                socketClient.disconnect()
             }
         }
     }

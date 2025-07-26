@@ -59,6 +59,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+    implementation("io.socket:socket.io-client:2.1.2")
+// Use the latest stable version
+// The socket.io-client library internally uses OkHttp, so ensure you have a compatible version
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+// Use a recent stable version
+
     // ✅ Compose BOM and UI components
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

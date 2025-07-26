@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.biometric.BiometricManager
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,10 +20,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        checkBiometricSupport()
+
         setContent {
             SecurePoolTheme {
                 // Collect the state from the ViewModel
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(Unit) {
+                    viewModel.userMessage.collect { message ->
+                        Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
 
                 LaunchedEffect(Unit) {
                     viewModel.navigationEvent.collect { event ->
@@ -44,9 +54,21 @@ class MainActivity : ComponentActivity() {
                     uiState = uiState,
                     onRestoreScore = { viewModel.restoreScore() },
                     onFindOpponent = { viewModel.findOpponent() },
-                    onRefresh = { viewModel.loadData() }
+                    onRefresh = { viewModel.loadData() },
+                    onRegisterBiometric = {viewModel.registerBiometricKey()}
                 )
             }
         }
+    }
+
+    private fun checkBiometricSupport() {
+        val biometricKeyManager = BiometricKeyManager(applicationContext)
+        val biometricManager = BiometricManager.from(this)
+        val canAuthenticate = when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> true
+            else -> false
+        }
+        viewModel.setBiometricAvailable(canAuthenticate)
+        viewModel.setBiometricRegistered(biometricKeyManager.keyPairExists())
     }
 }

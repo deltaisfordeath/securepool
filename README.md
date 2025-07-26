@@ -105,19 +105,18 @@ I/CertificatePinning: Certificate pinning is working correctly
 - **Hosts**: Restricted to `10.0.2.2` (emulator) and `localhost`
 
 ### Development vs Production:
-- **Development**: Certificate pinning can be disabled via `ENABLE_CERTIFICATE_PINNING` flag
-- **Production**: Always enabled for maximum security
+- **Development**: Certificate pinning can be disabled via `DEBUG_DISABLE_CERT_PINNING` flag (debug builds only)
+- **Production**: Always enabled for maximum security, cannot be disabled
 
 ## Troubleshooting
 
 ### Common Issues:
 1. **"Certificate pinning failure"**: Ensure backend server is running with correct certificate
 2. **"Network connection failed"**: Check that server is accessible at `https://10.0.2.2:443`
-3. **Build errors**: Run `./gradlew clean assembleDebug` to clean build
+3. **Build errors**: Run `.\gradlew clean assembleDebug` to clean build
 
 ### Documentation:
-- **Setup Guide**: `CERTIFICATE_PINNING_GUIDE.md`
-- **Implementation Summary**: `CERTIFICATE_PINNING_IMPLEMENTATION_SUMMARY.md`
+- **Complete Guide**: `CERTIFICATE_PINNING_COMPLETE_GUIDE.md` - Comprehensive implementation and usage guide
 - **Testing Guide**: `HOW_TO_RUN_AND_TEST.md`
 
 ---

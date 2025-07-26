@@ -3,6 +3,7 @@ package com.example.securepool.security
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.example.securepool.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +21,11 @@ object DynamicCertificatePinning {
     private const val PREFS_NAME = "cert_pinning_config"
     private const val KEY_CACHED_PINS = "cached_pins"
     private const val KEY_LAST_UPDATE = "last_update"
-    private const val CONFIG_ENDPOINT = "https://your-secure-config-server.com/api/cert-pins"
+    private const val KEY_API_TOKEN = "api_token"
+    
+    private fun getConfigEndpoint(): String {
+        return BuildConfig.CONFIG_SERVER_URL.ifEmpty { "https://fallback-config-server.com/api/cert-pins" }
+    }
     
     // Fallback pins in case remote config fails
     private val FALLBACK_PINS = mapOf(
@@ -57,7 +62,7 @@ object DynamicCertificatePinning {
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder()
-                    .url(CONFIG_ENDPOINT)
+                    .url(getConfigEndpoint())
                     .addHeader("Authorization", "Bearer ${getConfigApiToken(context)}")
                     .build()
                 
@@ -129,8 +134,12 @@ object DynamicCertificatePinning {
     }
     
     private fun getConfigApiToken(context: Context): String {
-        // Get API token from secure storage (KeyStore, encrypted SharedPreferences, etc.)
-        // This is just a placeholder - implement proper token management
-        return "your-config-api-token"
+        // Retrieve API token securely from encrypted SharedPreferences
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val token = prefs.getString(KEY_API_TOKEN, null)
+        if (token.isNullOrEmpty()) {
+            throw IllegalStateException("API token is not available. Ensure it is securely stored.")
+        }
+        return token
     }
 }

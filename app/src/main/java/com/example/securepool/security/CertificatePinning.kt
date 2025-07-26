@@ -69,8 +69,8 @@ object CertificatePinning {
         // Add production certificate pins
         if (BuildConfig.CERT_PIN_PROD.isNotEmpty()) {
             val prodPin = "sha256/${BuildConfig.CERT_PIN_PROD}"
-            builder.add("your-production-domain.com", prodPin)  // Update with your production domain
-            Log.d(TAG, "Added production certificate pin")
+            builder.add(BuildConfig.PRODUCTION_DOMAIN, prodPin)  // Use dynamic production domain
+            Log.d(TAG, "Added production certificate pin for ${BuildConfig.PRODUCTION_DOMAIN}")
         }
         
         // Fallback to hardcoded pins if no build config is available

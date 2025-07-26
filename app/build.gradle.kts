@@ -10,6 +10,8 @@ val certPinDev: String? = project.findProperty("CERT_PIN_DEV") as String?
 val certPinProd: String? = project.findProperty("CERT_PIN_PROD") as String?
 val useDynamicPinning: String? = project.findProperty("USE_DYNAMIC_PINNING") as String?
 val debugDisableCertPinning: String? = project.findProperty("DEBUG_DISABLE_CERT_PINNING") as String?
+val productionDomain: String? = project.findProperty("PRODUCTION_DOMAIN") as String?
+val configServerUrl: String? = project.findProperty("CONFIG_SERVER_URL") as String?
 
 android {
     namespace = "com.example.securepool"
@@ -28,6 +30,8 @@ android {
         buildConfigField("String", "MY_SECRET_KEY", "\"${mySecretKey ?: ""}\"")
         buildConfigField("String", "CERT_PIN_DEV", "\"${certPinDev ?: ""}\"")
         buildConfigField("String", "CERT_PIN_PROD", "\"${certPinProd ?: ""}\"")
+        buildConfigField("String", "PRODUCTION_DOMAIN", "\"${productionDomain ?: "your-production-domain.com"}\"")
+        buildConfigField("String", "CONFIG_SERVER_URL", "\"${configServerUrl ?: ""}\"")
         buildConfigField("boolean", "USE_DYNAMIC_PINNING", "${useDynamicPinning?.toBoolean() ?: false}")
     }
 

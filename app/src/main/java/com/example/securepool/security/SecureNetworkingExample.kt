@@ -1,4 +1,4 @@
-package com.example.securepool.examples
+package com.example.securepool.security
 
 import android.content.Context
 import com.example.securepool.BuildConfig
@@ -29,7 +29,7 @@ class SecureNetworkingExample {
         return if (BuildConfig.DEBUG) {
             "https://10.0.2.2:3000/" // Development server
         } else {
-            "https://your-production-domain.com/" // Production server
+            "https://${BuildConfig.PRODUCTION_DOMAIN}/" // Production server from build config
         }
     }
     

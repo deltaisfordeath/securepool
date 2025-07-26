@@ -10,9 +10,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.example.securepool.BiometricKeyManager
 import com.example.securepool.GameActivity
 import com.example.securepool.LeaderboardActivity
 import com.example.securepool.PracticeActivity
+import com.example.securepool.ui.model.HomeViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,7 +23,8 @@ fun SecurePoolHomeScreen(
     uiState: HomeUiState,
     onRestoreScore: () -> Unit,
     onFindOpponent: () -> String?,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onRegisterBiometric: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -78,6 +81,13 @@ fun SecurePoolHomeScreen(
 
                 Button(onClick = { context.startActivity(Intent(context, LeaderboardActivity::class.java)) }) {
                     Text("Show Ranking")
+                }
+                if (uiState.isBiometricAvailable && !uiState.isBiometricRegistered) {
+                    Button(onClick = {
+                        onRegisterBiometric()
+                    }) {
+                        Text("Enable Biometric Login")
+                    }
                 }
             }
         }

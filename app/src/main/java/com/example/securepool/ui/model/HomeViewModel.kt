@@ -1,12 +1,13 @@
 package com.example.securepool.ui.model
 
 import android.app.Application
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.securepool.BiometricKeyManager
 import com.example.securepool.api.RetrofitClient
 import com.example.securepool.model.LeaderboardEntry
 import com.example.securepool.api.TokenManager
+import com.example.securepool.model.BiometricRegisterRequest
 import com.example.securepool.model.RegisterRequest
 import com.example.securepool.ui.NavigationEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,7 +22,9 @@ data class HomeUiState(
     val score: Int = 0,
     val isLoading: Boolean = true,
     val leaderboard: List<LeaderboardEntry> = emptyList(),
-    val opponent: String? = null
+    val opponent: String? = null,
+    val isBiometricAvailable: Boolean = false,
+    val isBiometricRegistered: Boolean = false
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -34,8 +37,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
+    private val _userMessage = MutableSharedFlow<String>()
+    val userMessage = _userMessage.asSharedFlow()
+
     init {
         loadData()
+    }
+
+    fun setBiometricAvailable(isAvailable: Boolean) {
+        _uiState.update { it.copy(isBiometricAvailable = isAvailable) }
+    }
+
+    fun setBiometricRegistered(isRegistered: Boolean) {
+        _uiState.update { it.copy(isBiometricRegistered = isRegistered) }
     }
 
     fun loadData() {
@@ -68,7 +82,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
-                Toast.makeText(getApplication(), "Failed to load data: ${e.message}", Toast.LENGTH_LONG).show()
+                _userMessage.emit("Failed to load data: ${e.message}")
             }
         }
     }
@@ -84,13 +98,34 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val response = apiService.restoreScore(request)
 
                 if (response.isSuccessful) {
-                    Toast.makeText(getApplication(), "Points restored!", Toast.LENGTH_SHORT).show()
+                    _userMessage.emit("Points restored!")
                     loadData() // Reload data to get the new score
                 } else {
-                    Toast.makeText(getApplication(), "Restore request failed.", Toast.LENGTH_SHORT).show()
+                    _userMessage.emit("Restore request failed")
                 }
             } catch (e: Exception) {
-                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                _userMessage.emit("Network error: ${e.message}")
+            }
+        }
+    }
+
+    fun registerBiometricKey() {
+        viewModelScope.launch {
+            val biometricKeyManager = BiometricKeyManager(getApplication())
+            val publicKey = biometricKeyManager.generateKeyPair()
+            if (publicKey == null) {
+                _userMessage.emit("An error occurred generating biometric authentication key pair.")
+                return@launch
+            }
+            try {
+                val request = BiometricRegisterRequest(publicKey)
+                val response = apiService.registerBiometric(request)
+                if (response.isSuccessful) {
+                    _uiState.update { it.copy(isBiometricRegistered = true) }
+                }
+            } catch (e: Exception) {
+                _userMessage.emit("An error occurred registering biometric key to api.")
+                biometricKeyManager.deleteKeyPair()
             }
         }
     }

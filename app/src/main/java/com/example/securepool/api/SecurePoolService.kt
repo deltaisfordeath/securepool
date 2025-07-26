@@ -6,7 +6,16 @@ import retrofit2.http.*
 
 interface SecurePoolService {
     @POST("/api/register")
-    suspend fun registerUser(@Body request: RegisterRequest): Response<RegisterResponse>
+    suspend fun registerUser(@Body request: RegisterRequest): Response<LoginResponse>
+
+    @POST("/api/register-biometric")
+    suspend fun registerBiometric(@Body request: BiometricRegisterRequest): Response<RegisterResponse>
+
+    @GET("/api/challenge")
+    suspend fun getChallenge(@Query("username") username: String): Response<ChallengeResponse>
+
+    @POST("/api/challenge")
+    suspend fun postChallenge(@Body request: SignedChallengeRequest): Response<LoginResponse>
 
     @POST("/api/login")
     suspend fun loginUser(@Body request: RegisterRequest): Response<LoginResponse>

@@ -4,18 +4,122 @@
 #### Summer 2025  
   
 Purpose: To design an insecure Android application, identify and model threats, and then secure the app by applying techniques learned from CSCI 6130 - Mobile Security.  
-  
+
+**✅ Security Features Implemented:**
+- **Certificate Pinning**: App validates server certificate against known SHA-256 hash
+- **Custom Trust Manager**: Only trusts the specific server certificate
+- **Hostname Verification**: Restricts connections to authorized hosts only
+
 ## Prerequisites  
 - Android Studio  
 - MySQL  
 - NodeJS  
-- OpenSSL  
+- OpenSSL (for certificate operations)
 
-## Backend Server  
-- From the `backend` directory, run `npm install`  
-- Update the `connectionProperties` object in `initializeDatabase.js` to the correct port, user, and password for your MySQL installation (insecure hard coded credentials will be patched in v2).   
-- Run `npm run start`  
+## Backend Server Setup
+1. **Install Dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. **Database Configuration:**
+   - **MySQL Setup**: Ensure MySQL is installed and running
+   - **Database Creation**: Run `initializeDatabase.js` to create the database:
+     ```bash
+     node initializeDatabase.js
+     ```
+   - **Update Credentials**: Edit `connectionProperties` in `initializeDatabase.js`:
+     ```javascript
+     const connectionProperties = {
+         host: 'localhost',
+         port: 3306,           // Your MySQL port
+         user: 'root',         // Your MySQL username  
+         password: 'abcdef',   // Your MySQL password
+     }
+     ```
+
+3. **Start the Server:**
+   ```bash
+   # From the backend directory
+   node server.js
+   ```
+   - Server runs on `https://localhost:443` with SSL/TLS
+   - Certificate located at `backend/dev_cert/securepool_cert.pem`
 
 ## Android Application
-- Copy `securepool_cert.pem` from `backend\dev_cert` to your emulated Android device in Android Studio by dragging it to the virtual device's screen.  
-- Install the certificate on the Android device `Settings > Security > Encryption & credentials > Install a certificate > CA Certificate` and locate `securepool_cert.pem`  
+
+### 🔐 Certificate Pinning (NEW - Automatic)
+**No manual certificate installation needed!** The app now includes:
+- Built-in certificate pinning using SHA-256 hash: `LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=`
+- Certificate file automatically bundled in app assets
+- Custom SSL validation that bypasses system certificate store
+
+### Running the App
+1. **Using Android Studio (Recommended):**
+   - Open project in Android Studio
+   - Start an emulator or connect a device
+   - Click "Run" button
+
+2. **Using Command Line:**
+   ```bash
+   # Build the app (Windows)
+   .\gradlew.bat assembleDebug
+   
+   # Build the app (Linux/Mac)  
+   ./gradlew assembleDebug
+   
+   # Install on device/emulator
+   adb install app/build/outputs/apk/debug/app-debug.apk
+   ```n20+
+
+3. **Monitor Certificate Pinning:**
+   ```bash
+   # Watch for certificate pinning logs
+   adb logcat | findstr "Certificate\|Pinning\|SecurePool"
+   ```
+
+## Testing Certificate Pinning
+
+### Expected Log Output:
+```
+D/CertificateUtils: Certificate SHA-256 Hash: sha256:LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=
+I/CertificatePinning: Certificate pinning enabled
+I/CertificatePinning: Certificate pinning is working correctly
+```
+
+### Test Checklist:
+- [ ] Backend server running on HTTPS port 443
+- [ ] App connects successfully to server
+- [ ] Login/registration works
+- [ ] Leaderboard loads (tests API connectivity)
+- [ ] Certificate pinning logs appear
+- [ ] No SSL certificate errors
+
+## Security Architecture
+
+### Certificate Pinning Implementation:
+- **Location**: `app/src/main/java/com/example/securepool/security/CertificatePinning.kt`
+- **Method**: SHA-256 public key hash validation
+- **Fallback**: Custom trust manager for additional security
+- **Hosts**: Restricted to `10.0.2.2` (emulator) and `localhost`
+
+### Development vs Production:
+- **Development**: Certificate pinning can be disabled via `ENABLE_CERTIFICATE_PINNING` flag
+- **Production**: Always enabled for maximum security
+
+## Troubleshooting
+
+### Common Issues:
+1. **"Certificate pinning failure"**: Ensure backend server is running with correct certificate
+2. **"Network connection failed"**: Check that server is accessible at `https://10.0.2.2:443`
+3. **Build errors**: Run `./gradlew clean assembleDebug` to clean build
+
+### Documentation:
+- **Setup Guide**: `CERTIFICATE_PINNING_GUIDE.md`
+- **Implementation Summary**: `CERTIFICATE_PINNING_IMPLEMENTATION_SUMMARY.md`
+- **Testing Guide**: `HOW_TO_RUN_AND_TEST.md`
+
+---
+
+**Note**: The old method of manually installing certificates on the device is no longer needed. Certificate pinning is now handled automatically by the app code, providing stronger security than relying on the system certificate store.  

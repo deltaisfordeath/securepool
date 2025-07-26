@@ -91,10 +91,11 @@ class LoginActivity : FragmentActivity() {
     private fun checkBiometricSupport() {
         val biometricManager = BiometricManager.from(this)
         val canAuthenticate = when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)) {
-            BiometricManager.BIOMETRIC_SUCCESS -> biometricKeyManager.keyPairExists()
+            BiometricManager.BIOMETRIC_SUCCESS -> true
             else -> false
         }
         viewModel.setBiometricAvailable(canAuthenticate)
+        viewModel.setBiometricRegistered(biometricKeyManager.keyPairExists())
     }
 
     private fun setupBiometricPrompt() {
@@ -153,6 +154,10 @@ fun LoginScreen(
     onBiometricLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit
 ) {
+
+    val isUsernamePopulated = uiState.username.isNotBlank()
+    val isPasswordPopulated = uiState.password.isNotBlank()
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("SecurePool Login") }) },
     ) { padding ->
@@ -164,16 +169,17 @@ fun LoginScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = uiState.username, // Read value from state
-                onValueChange = onUsernameChange, // Call lambda on change
+                value = uiState.username,
+                onValueChange = onUsernameChange,
                 label = { Text("Username") },
                 singleLine = true,
-                enabled = !uiState.isLoading
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
-                value = uiState.password, // Read value from state
-                onValueChange = onPasswordChange, // Call lambda on change
+                value = uiState.password,
+                onValueChange = onPasswordChange,
                 label = { Text("Password") },
                 singleLine = true,
                 enabled = !uiState.isLoading,
@@ -184,16 +190,17 @@ fun LoginScreen(
                         Icon(icon, "Toggle password visibility")
                     }
                 },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                modifier = Modifier.fillMaxWidth()
             )
-
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Button(
-                    onClick = onLoginClicked, // Call lambda on click
-                    enabled = !uiState.isLoading,
+                    onClick = onLoginClicked,
+                    enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
                     modifier = Modifier.weight(1f)
                 ) {
                     if (uiState.isLoading) {
@@ -204,7 +211,7 @@ fun LoginScreen(
                 }
             }
 
-            if (uiState.isBiometricAvailable) {
+            if (uiState.isBiometricAvailable && uiState.isBiometricRegistered) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -212,7 +219,7 @@ fun LoginScreen(
                 ) {
                     Button(
                         onClick = onBiometricLoginClicked,
-                        enabled = !uiState.isLoading,
+                        enabled = !uiState.isLoading && isUsernamePopulated,
                         modifier = Modifier.weight(1f)
                     ) {
                         if (uiState.isLoading) {
@@ -235,7 +242,7 @@ fun LoginScreen(
             ) {
                 Button(
                     onClick = onRegisterClicked,
-                    enabled = !uiState.isLoading,
+                    enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
                     modifier = Modifier.weight(1f)
                 ) {
                     if (uiState.isLoading) {

@@ -23,6 +23,7 @@ data class LoginUiState(
     val username: String = "",
     val password: String = "",
     val isBiometricAvailable: Boolean = false,
+    val isBiometricRegistered: Boolean = false,
     val isPasswordVisible: Boolean = false,
     val errorMessage: String? = null
 )
@@ -35,7 +36,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-    // This flow now carries the challenge string to the Activity
     private val _showBiometricPromptRequest = MutableSharedFlow<String>()
     val showBiometricPromptRequest = _showBiometricPromptRequest.asSharedFlow()
 
@@ -64,6 +64,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setBiometricAvailable(isAvailable: Boolean) {
         _uiState.update { it.copy(isBiometricAvailable = isAvailable) }
+    }
+
+    fun setBiometricRegistered(isRegistered: Boolean) {
+        _uiState.update { it.copy(isBiometricRegistered = isRegistered)}
     }
 
     /**
@@ -103,7 +107,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 val request = SignedChallengeRequest(_uiState.value.username, signedChallengeBase64)
                 val loginResponse = apiService.postChallenge(request)
                 val body = loginResponse.body()
-                if (loginResponse.isSuccessful && body != null) {
+                if (loginResponse.isSuccessful && body != null && body.accessToken != null && body.refreshToken != null) {
                     tokenManager.saveTokens(body.accessToken, body.refreshToken)
                     tokenManager.saveUsername(body.username)
                     _navigationEvent.emit(NavigationEvent.NavigateToHome)
@@ -133,13 +137,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 val response = apiService.loginUser(request)
                 val body = response.body()
 
-                if (response.isSuccessful && body != null) {
+                if (response.isSuccessful && body != null && body.accessToken != null && body.refreshToken != null) {
                     tokenManager.saveTokens(body.accessToken, body.refreshToken)
                     tokenManager.saveUsername(body.username)
-                    // Emit a navigation event instead of updating state
                     _navigationEvent.emit(NavigationEvent.NavigateToHome)
                 } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Login failed"
+                    val errorMessage = when {
+                        response.code() == 401 -> "Invalid credentials"
+                        else -> "An unknown error occurred."}
                     Toast.makeText(getApplication(), errorMessage, Toast.LENGTH_LONG).show()
                     _uiState.update { it.copy(isLoading = false) }
                 }
@@ -161,20 +166,22 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
-                val publicKey = biometricKeyManager.generateKeyPair()
-                if (publicKey == null) {
-                    Toast.makeText(getApplication(), "Could not generate security key.", Toast.LENGTH_SHORT).show()
-                    return@launch
+                val publicKey = when {
+                    _uiState.value.isBiometricRegistered -> biometricKeyManager.generateKeyPair()
+                    else -> null
                 }
 
                 val request = RegisterRequest(currentState.username, currentState.password, publicKey)
                 val response = apiService.registerUser(request)
 
-                if (response.isSuccessful) {
-                    Toast.makeText(getApplication(), "Registration successful! Please log in.", Toast.LENGTH_SHORT).show()
-                    // Optionally, you could log them in directly here by getting tokens
+                val body = response.body()
+
+                if (response.isSuccessful && body != null && body.accessToken != null && body.refreshToken != null) {
+                    tokenManager.saveTokens(body.accessToken, body.refreshToken)
+                    tokenManager.saveUsername(body.username)
+                    _navigationEvent.emit(NavigationEvent.NavigateToHome)
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Registration failed"
+                    val errorMsg = body?.message ?: "Registration failed"
                     Toast.makeText(getApplication(), errorMsg, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {

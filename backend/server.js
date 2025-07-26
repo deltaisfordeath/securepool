@@ -91,7 +91,11 @@ app.post('/api/register', async (req, res) => {
     const insertSql = 'INSERT INTO users SET username = ?, password = ?, score = 100, publicKey = ?';
     await db.query(insertSql, [username, pwHash, insertKey]);
 
-    res.json({ success: true });
+    const findUserSql = 'SELECT username, score, lastZeroTimestamp FROM users WHERE username = ?';
+    const [newUser] = await db.query(findUserSql, [username]);
+    console.log('New user registered:', newUser[0]);
+
+    return getJwtTokenResponse(newUser[0], res);
 
   } catch (error) {
     console.error('Error during registration:', error);
@@ -100,28 +104,29 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/register-biometric', verifyJwt, async (req, res) => {
-    const userName = req.user;
-    const { publicKey } = req.body;
+  const userName = req.user?.id;
+  console.log(`Registering biometric key for user: ${userName.toString()}`);
+  const { publicKey } = req.body;
 
-    if (!userName || !publicKey) {
-        return res.status(400).send({ error: 'User ID and public key are required.' });
-    }
+  if (!userName || !publicKey) {
+    return res.status(400).send({ error: 'User ID and public key are required.' });
+  }
 
-    const findUserSql = 'SELECT username FROM users WHERE username = ?';
+  const findUserSql = 'SELECT username FROM users WHERE username = ?';
 
-    const [user] = await db.query(findUserSql, [userName]);
+  const [user] = await db.query(findUserSql, [userName]);
 
-    if (user.length === 0) {
-      return res.status(404).send({message: 'User account not found'});
-    }
+  if (user.length === 0) {
+    return res.status(404).send({ message: 'User account not found' });
+  }
 
-    const updateUserSql = 'UPDATE users SET publicKey = ? WHERE username = ?';
+  const updateUserSql = 'UPDATE users SET publicKey = ? WHERE username = ?';
 
-    const result = await db.query(updateUserSql, [publicKey, userName]);
+  const result = await db.query(updateUserSql, [publicKey, userName]);
 
-    console.log(result);
+  console.log(result);
 
-    res.status(204).send({ message: 'Biometric key registered successfully.' });
+  res.status(204).send({ message: 'Biometric key registered successfully.' });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -135,14 +140,14 @@ app.post('/api/login', async (req, res) => {
   try {
     const [results] = await db.query(sql, [username]);
     if (results.length === 0) {
-      return res.json({ success: false });
+      return res.status(401).json({ success: false });
     }
     const user = results[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.json({ success: false });
+      return res.status(401).json({ success: false });
     }
-    
+
     return getJwtTokenResponse(user, res);
   } catch (error) {
     console.error('Error executing login query:', error);
@@ -151,89 +156,89 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/challenge', async (req, res) => {
-    const { username } = req.query;
+  const { username } = req.query;
 
-    const findUserSql = 'SELECT username FROM users WHERE username = ?';
+  const findUserSql = 'SELECT username FROM users WHERE username = ?';
 
-    const [user] = await db.query(findUserSql, [username]);
+  const [user] = await db.query(findUserSql, [username]);
 
-    if (user.length === 0) {
-      return res.status(404).send({message: 'User account not found'});
-    }
+  if (user.length === 0) {
+    return res.status(404).send({ message: 'User account not found' });
+  }
 
-    const deleteSql = 'DELETE FROM challenges WHERE username = ?';
-    await db.query(deleteSql, [username]);
+  const deleteSql = 'DELETE FROM challenges WHERE username = ?';
+  await db.query(deleteSql, [username]);
 
-    // Generate a cryptographically secure random challenge.
-    const challenge = crypto.randomBytes(32).toString('hex');
+  // Generate a cryptographically secure random challenge.
+  const challenge = crypto.randomBytes(32).toString('hex');
 
-    const expiration = moment().add(15, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+  const expiration = moment().add(15, 'minutes').format('YYYY-MM-DD HH:mm:ss');
 
-    const sql = 'INSERT INTO challenges (username, challenge, expiration) VALUES (?, ?, ?)'
-    const [result] = await db.query(sql, [username, challenge, expiration]);
+  const sql = 'INSERT INTO challenges (username, challenge, expiration) VALUES (?, ?, ?)'
+  const [result] = await db.query(sql, [username, challenge, expiration]);
 
-    console.log(result);
+  console.log(result);
 
-    setTimeout(async () => {
-      console.log('Purging expired challenges');
-      const now = moment().format('YYYY-MM-DD HH:mm:ss');
-      const expiredChallengesSql = 'DELETE FROM challenges WHERE expiration < ?'
-      await db.query(expiredChallengesSql, [now]);
-    }, CHALLENGE_DURATION);
+  setTimeout(async () => {
+    console.log('Purging expired challenges');
+    const now = moment().format('YYYY-MM-DD HH:mm:ss');
+    const expiredChallengesSql = 'DELETE FROM challenges WHERE expiration < ?'
+    await db.query(expiredChallengesSql, [now]);
+  }, CHALLENGE_DURATION);
 
-    console.log(`Inserting challenge into db ${result}`);
-    
-    res.send({ challenge });
+  console.log(`Inserting challenge into db ${result}`);
+
+  res.send({ challenge });
 });
 
 app.post('/api/challenge', async (req, res) => {
-    const { userId, signedChallenge } = req.body;
+  const { userId, signedChallenge } = req.body;
 
-    if (!userId || !signedChallenge) {
-        return res.status(400).send({ error: 'User ID and signed challenge are required.' });
+  if (!userId || !signedChallenge) {
+    return res.status(400).send({ error: 'User ID and signed challenge are required.' });
+  }
+
+  const userSql = 'SELECT username, score, lastZeroTimestamp, publicKey FROM users WHERE username = ?';
+  const [userRes] = await db.query(userSql, [userId]);
+
+  if (!userRes[0]) {
+    return res.status(400).send({ error: 'No user found for the given username' });
+  }
+
+  const user = userRes[0];
+
+  const sql = 'SELECT * FROM challenges WHERE username = ?';
+  const [challenge] = await db.query(sql, [userId]);
+
+  if (challenge.length === 0) {
+    return res.status(400).send({ error: 'No challenge was issued for this user. Please request a challenge first.' });
+  }
+
+  try {
+    const verify = crypto.createVerify('SHA256');
+    verify.update(challenge[0].challenge);
+    verify.end();
+
+    // The public key from the Android Keystore is in X.509 format.
+    // We need to wrap it in PEM headers for Node.js's crypto module to parse it correctly.
+    const publicKey = `-----BEGIN PUBLIC KEY-----\n${user.publicKey}\n-----END PUBLIC KEY-----`;
+
+    const isSignatureValid = verify.verify(publicKey, signedChallenge, 'base64');
+
+    if (isSignatureValid) {
+      console.log(`Login successful for user: ${userId}`);
+      return getJwtTokenResponse(user, res);
+    } else {
+      console.log(`Login failed for user: ${userId} - Invalid signature.`);
+      res.status(401).send({ error: 'Invalid signature.' });
     }
-
-    const userSql = 'SELECT username, score, lastZeroTimestamp, publicKey FROM users WHERE username = ?';
-    const [userRes] = await db.query(userSql, [userId]);
-
-    if (!userRes[0]) {
-      return res.status(400).send({ error: 'No user found for the given username' });
-    }
-
-    const user = userRes[0];
-
-    const sql = 'SELECT * FROM challenges WHERE username = ?';
-    const [challenge] = await db.query(sql, [userId]);
-
-    if (challenge.length === 0) {
-        return res.status(400).send({ error: 'No challenge was issued for this user. Please request a challenge first.' });
-    }
-
-    try {
-        const verify = crypto.createVerify('SHA256');
-        verify.update(challenge[0].challenge);
-        verify.end();
-
-        // The public key from the Android Keystore is in X.509 format.
-        // We need to wrap it in PEM headers for Node.js's crypto module to parse it correctly.
-        const publicKey = `-----BEGIN PUBLIC KEY-----\n${user.publicKey}\n-----END PUBLIC KEY-----`;
-
-        const isSignatureValid = verify.verify(publicKey, signedChallenge, 'base64');
-
-        if (isSignatureValid) {
-            console.log(`Login successful for user: ${userId}`);
-            return getJwtTokenResponse(user, res);
-        } else {
-            console.log(`Login failed for user: ${userId} - Invalid signature.`);
-            res.status(401).send({ error: 'Invalid signature.' });
-        }
-    } catch (error) {
-        console.error('Error during verification:', error);
-        res.status(500).send({ error: 'An error occurred during verification.' });
-    } finally {
-        const deleteSql = 'DELETE FROM challenges WHERE username = ?';
-        await db.query(deleteSql, [userId]);
-    }
+  } catch (error) {
+    console.error('Error during verification:', error);
+    res.status(500).send({ error: 'An error occurred during verification.' });
+  } finally {
+    const deleteSql = 'DELETE FROM challenges WHERE username = ?';
+    await db.query(deleteSql, [userId]);
+  }
 });
 
 // 📊 Get score + formatted timestamp

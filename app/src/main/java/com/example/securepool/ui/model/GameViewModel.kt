@@ -1,7 +1,6 @@
 package com.example.securepool.ui.model
 
 import android.app.Application
-import android.widget.Toast
 import androidx.lifecycle.*
 import com.example.securepool.api.RetrofitClient
 import com.example.securepool.api.SecureWebSocketClient
@@ -47,8 +46,6 @@ class GameViewModel(
     }
 
     fun sendMessage() {
-        Toast.makeText(getApplication(), "Sending message over websocket...", Toast.LENGTH_SHORT).show()
-
         socketClient.send("This is a message from ${uiState.value.playerUsername}")
     }
 

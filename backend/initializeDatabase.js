@@ -1,21 +1,38 @@
 import { createConnection } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 
-const database_name = "securepool_db";
+const database_name = process.env.DB_NAME;
 
 const connectionProperties = {
-            host: 'localhost',
-            port: 3306,
-            user: 'root',
-            password: 'abcdef', // 🔒 Replace with your actual password
-        }
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, // 🔒 Replace with your actual password
+}
 
-const createTableQuery = `
+// TODO: update table to allow for biometric registration
+const createUserTableQuery = `
     CREATE TABLE users (
         username VARCHAR(100) PRIMARY KEY,
         password VARCHAR(100),
         score INT DEFAULT 100,
-        lastZeroTimestamp DATETIME
+        lastZeroTimestamp DATETIME NULL DEFAULT NULL,
+        publicKey VARCHAR(255) NULL DEFAULT NULL
+    );
+`;
+
+const checkColumnQuery = `
+      SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = ? 
+      AND TABLE_NAME = 'users' 
+      AND COLUMN_NAME = 'publicKey'
+    `;
+
+const createChallengeTableQuery = `
+    CREATE TABLE challenges (
+        username VARCHAR(100) PRIMARY KEY,
+        challenge VARCHAR(255),
+        expiration DATETIME
     );
 `;
 
@@ -27,12 +44,12 @@ const gamer4pw = await bcrypt.hash('d123', salt);
 const gamer5pw = await bcrypt.hash('e123', salt);
 
 const seedUsersQuery = `
-    INSERT INTO users (username, password, score, lastZeroTimestamp) VALUES
-    ('gamerA', '${gamer1pw}', 100, NULL),
-    ('gamerB', '${gamer2pw}', 100, NULL),
-    ('gamerC', '${gamer3pw}', 100, NULL),
-    ('gamerD', '${gamer4pw}', 100, NULL),
-    ('gamerE', '${gamer5pw}', 100, NULL);
+    INSERT INTO users (username, password, score) VALUES
+    ('gamerA', '${gamer1pw}', 100),
+    ('gamerB', '${gamer2pw}', 100),
+    ('gamerC', '${gamer3pw}', 100),
+    ('gamerD', '${gamer4pw}', 100),
+    ('gamerE', '${gamer5pw}', 100);
 `;
 
 /**
@@ -46,32 +63,40 @@ export default async function initializeDatabase() {
         console.log('Connected to MySQL database.');
 
         await connection.execute(`CREATE DATABASE IF NOT EXISTS ${database_name}`);
-        
+
         await connection.query(`USE \`${database_name}\`;`);
 
         await connection.connect();
 
-        // 1. Check if the 'users' table exists
         const [rows] = await connection.execute(
             `SHOW TABLES LIKE 'users';`
         );
 
-        console.log(rows);
-
         if (rows.length === 0) {
-            // Table does not exist, so create it
             console.log('Table "users" does not exist. Creating table...');
-            connection.execute(createTableQuery);
+            connection.execute(createUserTableQuery);
             console.log('Table "users" created successfully.');
 
-            // After creating, it's definitely empty, so seed it
             console.log('Seeding "users" table with initial data...');
             connection.execute(seedUsersQuery);
             console.log('Users seeded successfully.');
         } else {
             console.log('Table "users" already exists.');
 
-            // 2. Check if the table has any users (rows)
+            const [rows] = await connection.execute(checkColumnQuery, [database_name]);
+
+            if (rows.length === 0) {
+                console.log("Column 'publicKey' does not exist. Adding it now... 🏃");
+                const addColumnQuery = `
+                    ALTER TABLE users 
+                    ADD COLUMN publicKey VARCHAR(255) NULL DEFAULT NULL
+                `;
+                await connection.query(addColumnQuery);
+                console.log("Column 'publicKey' added successfully! ✨");
+            } else {
+                console.log("Column 'publicKey' already exists. No action taken. 👍");
+            }
+
             const [userCountRows] = await connection.execute(
                 `SELECT COUNT(*) AS count FROM users;`
             );
@@ -86,6 +111,19 @@ export default async function initializeDatabase() {
                 console.log(`Table "users" already contains ${userCount} users. No seeding required.`);
             }
         }
+        const [challengeRows] = await connection.execute(
+            `SHOW TABLES LIKE 'challenges';`
+        );
+
+        if (challengeRows.length === 0) {
+            console.log('Table "challenges" does not exist. Creating table...');
+            connection.execute(createChallengeTableQuery);
+            console.log('Table "challenges" created successfully.');
+
+        } else {
+            console.log('Table "challenges" already exists.');
+        }
+
         return connection;
     } catch (error) {
         console.error('Database initialization failed:', error);

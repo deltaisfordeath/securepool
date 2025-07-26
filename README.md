@@ -39,13 +39,13 @@ Purpose: To design an insecure Android application, identify and model threats, 
      }
      ```
 
-3. **Start the Server:**
-   ```bash
-   # From the backend directory
-   node server.js
-   ```
-   - Server runs on `https://localhost:443` with SSL/TLS
-   - Certificate located at `backend/dev_cert/securepool_cert.pem`
+## Backend Server  
+- From the `backend` directory, run `npm install`  
+- Run `cp .env.example .env` to copy the template .env file.
+- Populate the `.env` file with your secret keys and connection properties (can be left as-is for dev environment)  
+- Run `npm run start` to start the server, or `npm run dev` for hot reloading of server.js changes.
+- Server runs on `https://localhost:443` with SSL/TLS
+- Development certificate (self-signed) located at `backend/dev_cert/securepool_cert.pem`. Production must have a certificate signed by a valid CA.
 
 ## Android Application
 

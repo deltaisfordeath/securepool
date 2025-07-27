@@ -22,6 +22,14 @@ object CertificatePinning {
     fun createSecureClient(context: Context): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
         
+        // Security Check: Verify device integrity before enabling certificate pinning
+        val securityReport = DeviceSecurityChecker.getSecurityReport(context)
+        if (!securityReport.overallSecure && !BuildConfig.DEBUG) {
+            Log.e(TAG, "Device security compromised: ${securityReport.getSecurityIssues()}")
+            // In production, you might want to refuse connections or use additional security measures
+            // For now, we'll log the warning but continue with certificate pinning
+        }
+        
         // Debug-only disable check - NEVER active in production builds
         if (BuildConfig.DEBUG && BuildConfig.DEBUG_DISABLE_CERT_PINNING) {
             Log.w(TAG, "WARNING: Certificate pinning is DISABLED - DEBUG BUILD ONLY!")
@@ -84,8 +92,8 @@ object CertificatePinning {
             (BuildConfig.CERT_PIN_PROD.isEmpty() || BuildConfig.CERT_PIN_PROD.startsWith("PLACEHOLDER"))) {
             if (BuildConfig.DEBUG) {
                 Log.w(TAG, "Using emergency development fallback pins - FOR DEVELOPMENT ONLY")
-                builder.add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
-                builder.add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+                builder.add("10.0.2.2", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
+                builder.add("localhost", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
             } else {
                 Log.e(TAG, "No valid certificate pins configured for production build - this is a configuration error")
                 throw IllegalStateException("Certificate pinning cannot be initialized: no valid pins configured")

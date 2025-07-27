@@ -1,15 +1,6 @@
 import { createConnection } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 
-const database_name = process.env.DB_NAME;
-
-const connectionProperties = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD, // 🔒 Replace with your actual password
-}
-
 // TODO: update table to allow for biometric registration
 const createUserTableQuery = `
     CREATE TABLE users (
@@ -56,6 +47,24 @@ const seedUsersQuery = `
  * Initializes the database by checking for the 'users' table and seeding it if empty.
  */
 export default async function initializeDatabase() {
+    // Read environment variables at runtime
+    const database_name = process.env.DB_NAME;
+    const connectionProperties = {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+    };
+
+    // Debug logging
+    console.log('Database connection properties:', {
+        host: connectionProperties.host,
+        port: connectionProperties.port,
+        user: connectionProperties.user,
+        password: connectionProperties.password ? '[SET]' : '[NOT SET]',
+        database_name: database_name
+    });
+
     let connection;
     try {
         // Establish a connection to the database

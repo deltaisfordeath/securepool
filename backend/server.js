@@ -8,6 +8,10 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 app.use(cors());
@@ -63,43 +67,101 @@ app.use((req, res, next) => {
 });
 
 // Initialize the database connection
-const db = await initializeDatabase();
+let db;
+try {
+  db = await initializeDatabase();
+  if (db) {
+    console.log('Database connected successfully');
+  } else {
+    console.log('Database connection failed, using in-memory storage for testing');
+  }
+} catch (error) {
+  console.log('Database connection failed, using in-memory storage for testing');
+  db = null;
+}
+
+// In-memory user storage for testing when database is not available
+const memoryUsers = new Map();
 
 app.get('/', (req, res) => {
   res.send('SecurePool backend is running');
 });
 
+// Test endpoint to verify certificate pinning is working
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'Certificate pinning test successful!', 
+    timestamp: new Date().toISOString(),
+    database_connected: !!db
+  });
+});
+
 app.post('/api/register', async (req, res) => {
+  console.log('Registration request received:', req.body);
+  
   const { username, password, publicKey } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Missing credentials' });
   }
 
-  const insertKey = publicKey ?? null;
+  // Use database if available, otherwise use in-memory storage
+  if (db) {
+    // Original database logic
+    const insertKey = publicKey ?? null;
+    const salt = await bcrypt.genSalt(10);
+    const pwHash = await bcrypt.hash(password, salt);
 
-  const salt = await bcrypt.genSalt(10);
-  const pwHash = await bcrypt.hash(password, salt);
+    try {
+      const checkSql = 'SELECT * FROM users WHERE username = ?';
+      const [existingUsers] = await db.query(checkSql, [username]);
 
-  try {
-    const checkSql = 'SELECT * FROM users WHERE username = ?';
-    const [existingUsers] = await db.query(checkSql, [username]);
+      if (existingUsers.length > 0) {
+        return res.json({ success: false, message: 'Username already exists' });
+      }
 
-    if (existingUsers.length > 0) {
-      return res.json({ success: false, message: 'Username already exists' }); // Username already exists
+      const insertSql = 'INSERT INTO users SET username = ?, password = ?, score = 100, publicKey = ?';
+      await db.query(insertSql, [username, pwHash, insertKey]);
+
+      const findUserSql = 'SELECT username, score, lastZeroTimestamp FROM users WHERE username = ?';
+      const [newUser] = await db.query(findUserSql, [username]);
+      console.log('New user registered:', newUser[0]);
+
+      return getJwtTokenResponse(newUser[0], res);
+    } catch (error) {
+      console.error('Error during registration:', error);
+      return res.status(500).json({ success: false, error: 'Database error during registration' });
+    }
+  } else {
+    // In-memory storage fallback for testing
+    console.log('Using in-memory storage for user registration');
+    
+    if (memoryUsers.has(username)) {
+      return res.json({ success: false, message: 'Username already exists' });
     }
 
-    const insertSql = 'INSERT INTO users SET username = ?, password = ?, score = 100, publicKey = ?';
-    await db.query(insertSql, [username, pwHash, insertKey]);
-
-    const findUserSql = 'SELECT username, score, lastZeroTimestamp FROM users WHERE username = ?';
-    const [newUser] = await db.query(findUserSql, [username]);
-    console.log('New user registered:', newUser[0]);
-
-    return getJwtTokenResponse(newUser[0], res);
-
-  } catch (error) {
-    console.error('Error during registration:', error);
-    return res.status(500).json({ success: false, error: 'Database error during registration' });
+    const salt = await bcrypt.genSalt(10);
+    const pwHash = await bcrypt.hash(password, salt);
+    
+    const user = {
+      username: username,
+      password: pwHash,
+      score: 100,
+      lastZeroTimestamp: null,
+      publicKey: publicKey || null
+    };
+    
+    memoryUsers.set(username, user);
+    console.log('New user registered in memory:', user.username);
+    
+    // Generate a simple JWT-like response for testing
+    const testToken = Buffer.from(JSON.stringify({ username, timestamp: Date.now() })).toString('base64');
+    
+    return res.json({
+      success: true,
+      message: 'User registered successfully (in-memory mode)',
+      accessToken: testToken,
+      user: { username: user.username, score: user.score }
+    });
   }
 });
 
@@ -355,8 +417,8 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-server.listen(443, '0.0.0.0', () => {
-  console.log('Server running on port 443');
+server.listen(3000, '0.0.0.0', () => {
+  console.log('Server running on port 3000');
 });
 
 const wss = new Server(server);

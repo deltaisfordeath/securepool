@@ -11,10 +11,15 @@ import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.example.localpoolsimulator.Ball
-import com.example.securepool.api.SecureWebSocketClient
 import org.json.JSONObject
 import kotlin.math.*
 
+
+private sealed class GameEndState {
+    object None : GameEndState()
+    object Won : GameEndState()
+    object Lost : GameEndState()
+}
 /**
  * Custom SurfaceView for rendering the pool game.
  * This version uses a centralized GameConstants object for all dimensions and physics.
@@ -43,11 +48,12 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
     private val pockets = mutableListOf<Pocket>()
 
     // --- Game State ---
-    private var gameWon = false
+    private var gameEndState: GameEndState = GameEndState.None
     var isBallsMoving: Boolean = false
     private var awaitingServerResponse = false
     var onEightBallPocketed: (() -> Unit)? = null
     var onAimAngleUpdated: ((Float) -> Unit)? = null
+    private var myPlayerId: String? = null
 
     // --- Aiming ---
     var aimAngleDegrees: Float = 0f
@@ -132,7 +138,16 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
 
         updateAimAngleFromBallPositions()
 
-        gameWon = data.optString("gameState") == "GameOver" && data.optString("reason") == "8BallPocketed"
+        if (data.optString("gameState") == "GameOver") {
+            val winnerId = data.optString("winnerId", null)
+            gameEndState = if (winnerId != null && winnerId == myPlayerId) {
+                GameEndState.Won
+            } else {
+                GameEndState.Lost
+            }
+        } else {
+            gameEndState = GameEndState.None
+        }
 
         // After applying state, redraw the view
         postInvalidate()
@@ -170,8 +185,9 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
         ))
     }
 
-    fun setPendingServerState(state: JSONObject) {
+    fun setPendingServerState(state: JSONObject, socketId: String?) {
         pendingServerState = state
+        myPlayerId = socketId
     }
 
     fun update() {
@@ -245,8 +261,10 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
         if (!isBallsMoving && !awaitingServerResponse) {
             drawAimingLine(canvas)
         }
-        if (gameWon) {
-            drawWinText(canvas)
+        when (gameEndState) {
+            is GameEndState.Won -> drawEndGameText(canvas, "You Win!")
+            is GameEndState.Lost -> drawEndGameText(canvas, "You Lose!")
+            is GameEndState.None -> { /* Do nothing */ }
         }
     }
 
@@ -282,11 +300,11 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
         canvas.drawCircle(screenX, screenY, screenRadius, ball.paint)
     }
 
-    private fun drawWinText(canvas: Canvas) {
+    private fun drawEndGameText(canvas: Canvas, text: String) {
         winTextPaint.textSize = 150f * scaleFactor
         val x = width / 2f
         val y = height / 2f
-        canvas.drawText("You Win!", x, y, winTextPaint)
+        canvas.drawText(text, x, y, winTextPaint)
     }
 
     private fun drawAimingLine(canvas: Canvas) {

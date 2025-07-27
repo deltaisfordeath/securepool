@@ -92,9 +92,13 @@ fun PoolApp() {
             statusMessage = ""
             currentScreen = Screen.InGame
         }
+        webSocketClient.onOpponentShot = { angle, power ->
+            // When the opponent takes a shot, start the local animation on this client.
+            poolGameView.applyShot(angle, power)
+        }
         webSocketClient.onGameStateUpdate = { newState ->
             currentPlayerId = newState.optString("currentPlayer", currentPlayerId)
-            poolGameView.setPendingServerState(newState)
+            poolGameView.setPendingServerState(newState, myPlayerId)
         }
 
         webSocketClient.connect()

@@ -26,6 +26,7 @@ class SecureWebSocketClient(
     var onGameStateUpdate: ((state: JSONObject) -> Unit)? = null
     var onWaitingForOpponent: (() -> Unit)? = null
     var onMatchFound: ((gameId: String, initialState: JSONObject) -> Unit)? = null
+    var onOpponentShot: ((angle: Float, power: Float) -> Unit)? = null
     var onOpponentDisconnected: (() -> Unit)? = null
 
     init {
@@ -73,6 +74,15 @@ class SecureWebSocketClient(
                 this.currentGameId = gameId
                 Log.d("SocketIO", "🎉 Match found! Game ID: $gameId")
                 onMatchFound?.invoke(gameId, gameState)
+            }
+        }
+        mSocket.on("opponentTookShot") { args ->
+            (args.getOrNull(0) as? JSONObject)?.let { data ->
+                val angle = data.getDouble("angle").toFloat()
+                val power = data.getDouble("power").toFloat()
+                Log.d("SocketIO", "Opponent took shot: angle=$angle, power=$power")
+                // Invoke the new callback
+                onOpponentShot?.invoke(angle, power)
             }
         }
         mSocket.on("opponentDisconnected") {

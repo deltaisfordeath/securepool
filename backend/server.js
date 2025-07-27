@@ -84,6 +84,7 @@ function createNewGame() {
     players: [],
     currentPlayer: null,
     gameState: 'Playing',
+    winnderId: null
   };
 }
 
@@ -193,7 +194,8 @@ function serializeGameState(gameState) {
     })),
     gameState: gameState.gameState,
     currentPlayer: gameState.currentPlayer, // Include current player in state
-    reason: gameState.reason
+    reason: gameState.reason,
+    winnerId: gameState.winnerId
   };
 }
 
@@ -605,9 +607,21 @@ wss.on('connection', (socket) => {
       return;
     }
 
+    if (game.players.length > 1) {
+      const opponentId = game.players.find(p => p !== socket.id);
+      if (opponentId) {
+        console.log(`Relaying shot from ${socket.id} to opponent ${opponentId}`);
+        wss.to(opponentId).emit("opponentTookShot", { angle, power });
+      }
+    }
+
     console.log(`Client ${socket.id} taking shot in game ${gameId}`);
     const finalGameState = runShotSimulation(game, angle, power);
     games[gameId] = finalGameState;
+
+    if (finalGameState.gameState === "GameOver") {
+      finalGameState.winnerId = socket.id;
+    }
 
     wss.to(gameId).emit("gameStateUpdate", serializeGameState(finalGameState));
   });

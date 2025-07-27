@@ -15,6 +15,7 @@ import com.example.securepool.GameActivity
 import com.example.securepool.LeaderboardActivity
 import com.example.securepool.PracticeActivity
 import com.example.securepool.ui.model.HomeViewModel
+import com.example.securepool.ui.poolgame.PoolSimulatorActivity
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +76,7 @@ fun SecurePoolHomeScreen(
                     Text(if (uiState.score == 0) "Restore Score" else "Start Match")
                 }
 
-                Button(onClick = { context.startActivity(Intent(context, PracticeActivity::class.java)) }) {
+                Button(onClick = { context.startActivity(Intent(context, PoolSimulatorActivity::class.java)) }) {
                     Text("Practice Room")
                 }
 

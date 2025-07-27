@@ -30,6 +30,7 @@ class SecureWebSocketClient(
     var onDisconnected: ((reason: String) -> Unit)? = null
     var onMessageReceived: ((message: String) -> Unit)? = null
     var onError: ((exception: Exception) -> Unit)? = null
+    var onGameStateUpdate: ((state: JSONObject) -> Unit)? = null
 
     init {
         try {
@@ -69,25 +70,23 @@ class SecureWebSocketClient(
      * These listeners handle connection status, errors, and incoming messages.
      */
     private fun setupListeners() {
-        // Listener for the 'connect' event (when the socket successfully connects)
-        mSocket.on(Socket.EVENT_CONNECT, Emitter.Listener {
-            Log.d("SocketIO", "Connection opened")
-            onConnected?.invoke() // Trigger the external connected callback
-        })
-
-        // Listener for the 'disconnect' event (when the socket disconnects)
-        mSocket.on(Socket.EVENT_DISCONNECT, Emitter.Listener { args ->
-            val reason = args[0] as String // The reason for disconnection
-            Log.d("SocketIO", "Closed: $reason")
-            onDisconnected?.invoke(reason) // Trigger the external disconnected callback
-        })
-
-        // Listener for connection errors
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, Emitter.Listener { args ->
-            val error = args[0] as Exception // The exception object
-            Log.e("SocketIO", "Error: ${error.message}", error)
-            onError?.invoke(error) // Trigger the external error callback
-        })
+        mSocket.on(Socket.EVENT_CONNECT) {
+            Log.d("SocketIO", "✅ Connection Established: ${mSocket.id()}")
+            mSocket.emit("joinGame")
+        }
+        mSocket.on(Socket.EVENT_CONNECT_ERROR) { args ->
+            Log.e("SocketIO", "❌ Connection Error: ${args.joinToString(", ")}")
+        }
+        mSocket.on(Socket.EVENT_DISCONNECT) { args ->
+            Log.d("SocketIO", "🔌 Disconnected: ${args.joinToString(", ")}")
+        }
+        mSocket.on("gameStateUpdate") { args ->
+            if (args.isNotEmpty() && args[0] is JSONObject) {
+                val state = args[0] as JSONObject
+                // Invoke the new callback instead of setting state directly
+                onGameStateUpdate?.invoke(state)
+            }
+        }
 
         // Listener for a custom event named 'serverMessage' from the server.
         // This event name must match what your Node.js server emits.
@@ -121,6 +120,17 @@ class SecureWebSocketClient(
             Log.d("SocketIO", "Sent: $message")
         } else {
             Log.w("SocketIO", "Socket not connected, message not sent: $message")
+        }
+    }
+
+    fun takeShot(gameId: String, angle: Float, power: Float) {
+        if (mSocket.connected()) {
+            val shotData = JSONObject().apply {
+                put("gameId", gameId)
+                put("angle", angle)
+                put("power", power)
+            }
+            mSocket.emit("takeShot", shotData)
         }
     }
 

@@ -19,7 +19,7 @@ import java.net.URISyntaxException
  */
 class SecureWebSocketClient(
     private val context: Context,
-    private val serverUrl: String = "https://localhost:3000" // Default to Android emulator's localhost
+    private val serverUrl: String = "https://10.0.2.2:3000" // Default for Android emulator compatibility
 ) {
 
     // The Socket.IO client instance

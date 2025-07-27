@@ -58,18 +58,14 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
     var shotPower: Float = 0.5f
 
     // --- Networking ---
-    private var webSocketClient: SecureWebSocketClient? = null
-    private val gameId = "placeholder-game-id" // Example game ID
     @Volatile private var pendingServerState: JSONObject? = null
 
     init {
         holder.addCallback(this)
-        setupSocket()
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         setupPockets()
-        resetBalls()
 
         gameThread = GameThread(holder, this).apply {
             running = true
@@ -104,24 +100,13 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
                 Log.e("PoolGameView", "Failed to stop game thread.", e)
             }
         }
-        webSocketClient?.disconnect()
     }
 
-    private fun setupSocket() {
-        webSocketClient = SecureWebSocketClient(context).apply {
-            onGameStateUpdate = { serverState ->
-                pendingServerState = serverState
-                awaitingServerResponse = false
-            }
-            onConnected = { Log.d("PoolGameView", "Socket connected successfully!") }
-            onError = { e -> Log.e("PoolGameView", "Socket Error", e) }
-            connect()
-        }
-    }
-
-    private fun applyStateFromServer(data: JSONObject) {
+    fun applyStateFromServer(data: JSONObject) {
         val ballsData = data.optJSONArray("balls") ?: return
 
+        // Use a temporary list to avoid concurrent modification issues during redraw
+        val newBalls = mutableListOf<Ball>()
         for (i in 0 until ballsData.length()) {
             val ballJson = ballsData.getJSONObject(i)
             val id = ballJson.getString("id")
@@ -129,19 +114,28 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
             val y = ballJson.getDouble("y").toFloat()
             val isPocketed = ballJson.getBoolean("isPocketed")
 
-            balls.find { it.id == id }?.let { ball ->
-                ball.x = x
-                ball.y = y
-                if (isPocketed) ball.x = -1000f // Move pocketed balls off-screen
+            val color = when (id) {
+                "cue" -> GameConstants.CUE_BALL_COLOR
+                "8-ball" -> GameConstants.EIGHT_BALL_COLOR
+                else -> Color.RED // Default for other balls if added later
             }
+
+            val ball = Ball(id, x, y, GameConstants.VIRTUAL_BALL_RADIUS, color)
+            if (isPocketed) ball.x = -1000f // Move pocketed balls off-screen
+            newBalls.add(ball)
+        }
+
+        synchronized(balls) {
+            balls.clear()
+            balls.addAll(newBalls)
         }
 
         updateAimAngleFromBallPositions()
 
-        if (data.optString("gameState") == "GameOver" && data.optString("reason") == "8BallPocketed") {
-            gameWon = true
-            onEightBallPocketed?.invoke()
-        }
+        gameWon = data.optString("gameState") == "GameOver" && data.optString("reason") == "8BallPocketed"
+
+        // After applying state, redraw the view
+        postInvalidate()
     }
 
     private fun updateAimAngleFromBallPositions() {
@@ -176,41 +170,54 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
         ))
     }
 
-    fun resetBalls() {
-        balls.clear()
-        val startX = GameConstants.VIRTUAL_WIDTH / 4f
-        val midY = GameConstants.VIRTUAL_HEIGHT / 2f
-
-        balls.add(Ball("cue", startX, midY, GameConstants.VIRTUAL_BALL_RADIUS, GameConstants.CUE_BALL_COLOR))
-        balls.add(Ball("8-ball", GameConstants.VIRTUAL_WIDTH * 0.75f, midY, GameConstants.VIRTUAL_BALL_RADIUS, GameConstants.EIGHT_BALL_COLOR))
-
-        isBallsMoving = false
-        gameWon = false
-        awaitingServerResponse = false
-
-        balls.forEach {
-            it.velocityX = 0f
-            it.velocityY = 0f
-        }
+    fun setPendingServerState(state: JSONObject) {
+        pendingServerState = state
     }
 
     fun update() {
+        // --- NEW: Check for an early game-over condition ---
+        // Peek at the pending state from the server without consuming it yet.
+        pendingServerState?.let { state ->
+            val eightBall = balls.find { it.id == "8-ball" }
+            // If the client predicts the 8-ball is pocketed AND the server's pending state confirms it's game over...
+            if (eightBall != null && GamePhysics.isBallInAnyPocket(eightBall, pockets) && state.optString("gameState") == "GameOver") {
+
+                // ...then stop the local animation immediately.
+                isBallsMoving = false
+
+                // Apply the final, authoritative state from the server.
+                applyStateFromServer(state)
+
+                // Clear the pending state and exit the update cycle.
+                pendingServerState = null
+                return
+            }
+        }
+
+        // --- If no early exit, continue with the normal animation loop ---
         if (isBallsMoving) {
             var stillMovingCount = 0
-            balls.forEach { ball ->
-                ball.update()
-                if (ball.isMoving()) stillMovingCount++
-            }
-
-            for (i in balls.indices) {
-                GamePhysics.handleWallCollision(balls[i])
-                for (j in i + 1 until balls.size) {
-                    GamePhysics.handleBallCollision(balls[i], balls[j])
+            synchronized(balls) {
+                balls.forEach { ball ->
+                    ball.update()
+                    if (ball.isMoving()) stillMovingCount++
                 }
-                // Check for non-cue ball pocketing to stop it locally
-                if (balls[i].id != "cue" && GamePhysics.isBallInAnyPocket(balls[i], pockets)) {
-                    balls[i].velocityX = 0f
-                    balls[i].velocityY = 0f
+
+                for (i in balls.indices) {
+                    GamePhysics.handleWallCollision(balls[i])
+                    for (j in i + 1 until balls.size) {
+                        GamePhysics.handleBallCollision(balls[i], balls[j])
+                    }
+                }
+
+                // This prediction still makes the 8-ball disappear visually if the server state hasn't arrived yet.
+                val eightBall = balls.find { it.id == "8-ball" }
+                if (eightBall != null && eightBall.x > 0) {
+                    if (GamePhysics.isBallInAnyPocket(eightBall, pockets)) {
+                        eightBall.x = -1000f
+                        eightBall.velocityX = 0f
+                        eightBall.velocityY = 0f
+                    }
                 }
             }
 
@@ -219,15 +226,11 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
             }
         }
 
-        // Apply authoritative server state only when client simulation is idle
-        pendingServerState?.let { state ->
-            if (!isBallsMoving) {
-                pendingServerState = null
-                (context as? Activity)?.runOnUiThread {
-                    applyStateFromServer(state)
-                    invalidate()
-                }
-            }
+        // --- Regular Reconciliation: Apply server state after normal animation finishes ---
+        if (!isBallsMoving && pendingServerState != null) {
+            val stateToApply = pendingServerState!!
+            pendingServerState = null
+            applyStateFromServer(stateToApply)
         }
     }
 
@@ -319,22 +322,17 @@ class PoolGameView(context: Context, attrs: AttributeSet?) : SurfaceView(context
     }
 
     fun applyShot(angleDegrees: Float, power: Float) {
-        if (isBallsMoving || awaitingServerResponse) return
+        if (isBallsMoving) return
 
         val cueBall = balls.find { it.id == "cue" } ?: return
 
-        val maxSpeed = 3000f // This can be tuned
+        val maxSpeed = 3000f
         val speed = maxSpeed * power
         val angleRad = Math.toRadians(angleDegrees.toDouble()).toFloat()
 
-        // Start local prediction
         cueBall.velocityX = speed * cos(angleRad)
         cueBall.velocityY = speed * sin(angleRad)
         isBallsMoving = true
-
-        // Send authoritative shot to server
-        awaitingServerResponse = true
-        webSocketClient?.takeShot(gameId, angleDegrees, power)
     }
 
     inner class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView: PoolGameView) : Thread() {

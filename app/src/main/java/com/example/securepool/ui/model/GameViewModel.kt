@@ -42,11 +42,11 @@ class GameViewModel(
         socketClient.connect()
 
         // Optional: Send hello message to opponent
-        socketClient.send("Hello $opponentUsername from ${socketClient.hashCode()}")
+        socketClient.sendMessage("Hello $opponentUsername from ${socketClient.hashCode()}")
     }
 
     fun sendMessage() {
-        socketClient.send("This is a message from ${uiState.value.playerUsername}")
+        socketClient.sendMessage("This is a message from ${uiState.value.playerUsername}")
     }
 
     private fun loadInitialScores() {

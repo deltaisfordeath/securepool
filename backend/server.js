@@ -11,7 +11,8 @@ import crypto from 'crypto';
 import { GamePhysics } from "./gamePhysics.js";
 import { Ball } from './ball.js';
 
-const games = {};
+const games = {}; // Stores all active games, keyed by gameId
+let waitingPlayer = null; // Holds the socket of a player waiting for a match
 
 const app = express();
 app.use(cors());
@@ -61,9 +62,34 @@ const getJwtTokenResponse = (user, res) => {
   });
 }
 
+function createNewGame() {
+  const VIRTUAL_WIDTH = GamePhysics.VIRTUAL_TABLE_WIDTH;
+  const VIRTUAL_HEIGHT = GamePhysics.VIRTUAL_TABLE_HEIGHT;
+  const VIRTUAL_POCKET_RADIUS = 45;
+  const cornerPocketRadius = VIRTUAL_POCKET_RADIUS * 1.1;
+
+  return {
+    balls: [
+      new Ball(VIRTUAL_WIDTH / 4, VIRTUAL_HEIGHT / 2, 'cue'),
+      new Ball(VIRTUAL_WIDTH * 0.75, VIRTUAL_HEIGHT / 2, '8-ball')
+    ],
+    pockets: [
+      { x: GamePhysics.CUSHION_THICKNESS, y: GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
+      { x: VIRTUAL_WIDTH / 2, y: GamePhysics.CUSHION_THICKNESS / 2, radius: VIRTUAL_POCKET_RADIUS },
+      { x: VIRTUAL_WIDTH - GamePhysics.CUSHION_THICKNESS, y: GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
+      { x: GamePhysics.CUSHION_THICKNESS, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
+      { x: VIRTUAL_WIDTH / 2, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS / 2, radius: VIRTUAL_POCKET_RADIUS },
+      { x: VIRTUAL_WIDTH - GamePhysics.CUSHION_THICKNESS, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
+    ],
+    players: [],
+    currentPlayer: null,
+    gameState: 'Playing',
+  };
+}
+
 function runShotSimulation(originalGameState, angle, power) {
-  const gameState = cloneGameState(originalGameState); // Work on a safe copy
-  const { balls, pockets } = gameState;
+  const gameState = cloneGameState(originalGameState);
+  const { balls, pockets, players } = gameState;
   const cueBall = balls.find(b => b.id === 'cue');
 
   if (!cueBall) return originalGameState;
@@ -114,13 +140,28 @@ function runShotSimulation(originalGameState, angle, power) {
   if (pocketed8Ball) {
     gameState.gameState = "GameOver";
     gameState.reason = "8BallPocketed";
+  } else {
+    // --- ADDED LOGGING TO DEBUG THE TURN SWITCH ---
+    console.log("--- DEBUG: Switching Turn ---");
+    console.log("Players in game:", players);
+    console.log("Current player was:", gameState.currentPlayer);
+
+    const currentPlayerIndex = players.indexOf(gameState.currentPlayer);
+    console.log("Index of current player:", currentPlayerIndex); // If this is -1, that's the bug!
+
+    const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    gameState.currentPlayer = players[nextPlayerIndex];
+
+    console.log("Next player will be:", gameState.currentPlayer);
+    console.log("----------------------------");
+
+    gameState.currentPlayer = players[nextPlayerIndex];
   }
 
   return gameState;
 }
 
 function cloneGameState(gameState) {
-  // Create new Ball instances to preserve their methods (like .update() and .isMoving())
   const newBalls = gameState.balls.map(b => {
     const newBall = new Ball(b.x, b.y, b.id);
     newBall.velocityX = b.velocityX;
@@ -129,7 +170,6 @@ function cloneGameState(gameState) {
     return newBall;
   });
 
-  // Return a new game state object with the new array of balls
   return {
     ...gameState,
     balls: newBalls
@@ -149,9 +189,10 @@ function serializeGameState(gameState) {
       x: b.x,
       y: b.y,
       radius: b.radius,
-      isPocketed: !!b.isPocketed // Ensure boolean
+      isPocketed: !!b.isPocketed
     })),
     gameState: gameState.gameState,
+    currentPlayer: gameState.currentPlayer, // Include current player in state
     reason: gameState.reason
   };
 }
@@ -485,7 +526,7 @@ wss.use((socket, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     socket.userData = decoded;
-    console.log(`✅ Client ${socket.id} authenticated. User ID: ${decoded.userId || 'N/A'}`);
+    console.log(`✅ Client ${socket.id} authenticated. User ID: ${decoded.id || 'N/A'}`);
 
     next();
   } catch (err) {
@@ -505,55 +546,96 @@ wss.use((socket, next) => {
 });
 
 wss.on('connection', (socket) => {
-  // MODIFIED: Safer logging while auth is disabled
   console.log(`🔌 Socket.IO client connected: ${socket.id}`);
 
-  socket.on('joinGame', () => {
-    const gameId = "placeholder-game-id"; // Replace with actual game ID logic
-    socket.join(gameId);
-    console.log(`Client ${socket.id} joined game ${gameId}`);
+  socket.on('joinGame', ({ mode }) => {
+    if (mode === 'practice') {
+      console.log(`Client ${socket.id} starting a practice game.`);
+      const gameId = `practice_${socket.id}`;
+      const newGame = createNewGame();
+      newGame.players = [socket.id];
+      newGame.currentPlayer = socket.id; // In practice, you are always the current player
+      games[gameId] = newGame;
 
-    if (!games[gameId]) {
-      const VIRTUAL_WIDTH = GamePhysics.VIRTUAL_TABLE_WIDTH;
-      const VIRTUAL_HEIGHT = GamePhysics.VIRTUAL_TABLE_HEIGHT;
-      const VIRTUAL_POCKET_RADIUS = 45;
-      const cornerPocketRadius = VIRTUAL_POCKET_RADIUS * 1.1;
+      socket.join(gameId);
+      // Let the client know the match is ready (immediately for practice)
+      socket.emit("matchFound", { gameId, gameState: serializeGameState(newGame) });
 
-      games[gameId] = {
-        balls: [
-          new Ball(VIRTUAL_WIDTH / 4, VIRTUAL_HEIGHT / 2, 'cue'),
-          new Ball(VIRTUAL_WIDTH * 0.75, VIRTUAL_HEIGHT / 2, '8-ball')
-        ],
-        pockets: [
-          // Top Row
-          { x: GamePhysics.CUSHION_THICKNESS, y: GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
-          { x: VIRTUAL_WIDTH / 2, y: GamePhysics.CUSHION_THICKNESS / 2, radius: VIRTUAL_POCKET_RADIUS },
-          { x: VIRTUAL_WIDTH - GamePhysics.CUSHION_THICKNESS, y: GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
-          // Bottom Row
-          { x: GamePhysics.CUSHION_THICKNESS, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
-          { x: VIRTUAL_WIDTH / 2, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS / 2, radius: VIRTUAL_POCKET_RADIUS },
-          { x: VIRTUAL_WIDTH - GamePhysics.CUSHION_THICKNESS, y: VIRTUAL_HEIGHT - GamePhysics.CUSHION_THICKNESS, radius: cornerPocketRadius },
-        ]
-      };
+    } else if (mode === 'match') {
+      if (waitingPlayer) {
+        // Match found!
+        console.log(`Match found between ${waitingPlayer.id} and ${socket.id}`);
+        const gameId = crypto.randomUUID();
+        const newGame = createNewGame();
+
+        // Assign players and set the first turn
+        newGame.players = [waitingPlayer.id, socket.id];
+        newGame.currentPlayer = waitingPlayer.id; // The first player to wait gets the first turn
+        games[gameId] = newGame;
+
+        // Join both players to the same game room
+        waitingPlayer.join(gameId);
+        socket.join(gameId);
+
+        // Reset the waiting queue
+        const opponentSocket = waitingPlayer;
+        waitingPlayer = null;
+
+        // Notify both players that the match has started
+        const payload = { gameId, gameState: serializeGameState(newGame) };
+        wss.to(gameId).emit("matchFound", payload);
+
+      } else {
+        // No one is waiting, so this player becomes the waiting player
+        console.log(`Client ${socket.id} is waiting for a match.`);
+        waitingPlayer = socket;
+        socket.emit("waitingForOpponent");
+      }
     }
-    socket.emit("gameStateUpdate", serializeGameState(games[gameId]));
   });
 
   socket.on("takeShot", ({ gameId, angle, power }) => {
     console.log(`Client ${socket.id} taking shot in game ${gameId} with angle ${angle} and power ${power}`);
-    const currentGameState = games[gameId];
-    console.log(currentGameState);
-    if (!currentGameState) return;
+    const game = games[gameId];
+    if (!game) return;
 
-    console.log('State BEFORE simulation:', JSON.stringify(serializeGameState(currentGameState)));
-    const finalGameState = runShotSimulation(currentGameState, angle, power);
+    // Verify if it's the correct player's turn in a match
+    if (game.players.length > 1 && game.currentPlayer !== socket.id) {
+      console.log(`Shot attempt by ${socket.id} but it's ${game.currentPlayer}'s turn.`);
+      return;
+    }
+
+    console.log(`Client ${socket.id} taking shot in game ${gameId}`);
+    const finalGameState = runShotSimulation(game, angle, power);
     games[gameId] = finalGameState;
-    console.log('State AFTER simulation:', JSON.stringify(serializeGameState(finalGameState)));
 
     wss.to(gameId).emit("gameStateUpdate", serializeGameState(finalGameState));
   });
 
+  // Handle disconnects for matchmaking and matches
   socket.on("disconnect", (reason) => {
     console.log(`🔌 Client disconnected: ${socket.id}, reason: ${reason}`);
+
+    // If the disconnecting client was waiting for a match, clear the queue
+    if (waitingPlayer && waitingPlayer.id === socket.id) {
+      waitingPlayer = null;
+      console.log("Waiting player disconnected, queue cleared.");
+    }
+
+    // If the client was in a match, notify the opponent and end the game
+    Object.keys(games).forEach(gameId => {
+      const game = games[gameId];
+      const playerIndex = game.players.indexOf(socket.id);
+
+      if (playerIndex !== -1 && game.players.length > 1) {
+        console.log(`Player ${socket.id} disconnected from match ${gameId}.`);
+        // Notify the other player
+        const opponentId = game.players[1 - playerIndex];
+        wss.to(opponentId).emit("opponentDisconnected");
+
+        // Clean up the game
+        delete games[gameId];
+      }
+    });
   });
 });

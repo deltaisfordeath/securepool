@@ -2,110 +2,117 @@ package com.example.securepool.api
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import io.socket.client.IO
 import io.socket.client.Socket
-import io.socket.emitter.Emitter
 import org.json.JSONObject
 import java.net.URISyntaxException
 
-/**
- * A client for connecting to a Socket.IO server from an Android application.
- * This class handles the connection, sending, and receiving of messages using
- * the socket.io-client-java library.
- *
- * @param context The application context.
- * @param serverUrl The URL of the Socket.IO server (e.g., "http://10.0.2.2:3000").
- */
 class SecureWebSocketClient(
     private val context: Context,
-    private val serverUrl: String = "https://10.0.2.2:443" // Default to Android emulator's localhost
+    private val serverUrl: String = "https://10.0.2.2:443"
 ) {
 
-    // The Socket.IO client instance
     private lateinit var mSocket: Socket
+    private var currentGameId: String? = null
 
-    // Callbacks to notify the calling component (e.g., Activity/Fragment) about events
+    // Public property to safely access the socket ID
+    val socketId: String?
+        get() = if (::mSocket.isInitialized && mSocket.connected()) mSocket.id() else null
+
+    // Callbacks for matchmaking and game events
     var onConnected: (() -> Unit)? = null
     var onDisconnected: ((reason: String) -> Unit)? = null
-    var onMessageReceived: ((message: String) -> Unit)? = null
     var onError: ((exception: Exception) -> Unit)? = null
     var onGameStateUpdate: ((state: JSONObject) -> Unit)? = null
+    var onWaitingForOpponent: (() -> Unit)? = null
+    var onMatchFound: ((gameId: String, initialState: JSONObject) -> Unit)? = null
+    var onOpponentDisconnected: (() -> Unit)? = null
 
     init {
         try {
-            // Configure Socket.IO connection options
-            val options = IO.Options()
-
-            val tokenManager = TokenManager(context)
-            val token = tokenManager.getAccessToken()
-            val authMap = mutableMapOf<String, String>()
-            authMap["token"] = "Bearer $token"
-            options.auth = authMap
-
-            // Ensure a new connection is established, useful if reusing the client instance
-            options.forceNew = true
-            // Enable automatic re-connection attempts
-            options.reconnection = true
-            // Set the number of re-connection attempts
-            options.reconnectionAttempts = 5
-            // Set the delay between re-connection attempts in milliseconds
-            options.reconnectionDelay = 1000
-
-            // Initialize the Socket.IO client with the server URL and options
+            val options = IO.Options().apply {
+                val token = TokenManager(context).getAccessToken()
+                auth = mapOf("token" to "Bearer $token")
+                forceNew = true
+                reconnection = true
+                reconnectionAttempts = 5
+                reconnectionDelay = 1000
+            }
             mSocket = IO.socket(serverUrl, options)
-
-            // Set up event listeners for the Socket.IO connection
             setupListeners()
-
         } catch (e: URISyntaxException) {
-            // Log and report any URI syntax errors during initialization
             Log.e("SocketIO", "URI Syntax Error: ${e.message}", e)
             onError?.invoke(e)
         }
     }
 
-    /**
-     * Sets up the various event listeners for the Socket.IO client.
-     * These listeners handle connection status, errors, and incoming messages.
-     */
     private fun setupListeners() {
         mSocket.on(Socket.EVENT_CONNECT) {
             Log.d("SocketIO", "✅ Connection Established: ${mSocket.id()}")
-            mSocket.emit("joinGame")
+            onConnected?.invoke()
         }
         mSocket.on(Socket.EVENT_CONNECT_ERROR) { args ->
             Log.e("SocketIO", "❌ Connection Error: ${args.joinToString(", ")}")
         }
         mSocket.on(Socket.EVENT_DISCONNECT) { args ->
             Log.d("SocketIO", "🔌 Disconnected: ${args.joinToString(", ")}")
+            onDisconnected?.invoke(args.getOrNull(0)?.toString() ?: "Unknown reason")
         }
         mSocket.on("gameStateUpdate") { args ->
-            if (args.isNotEmpty() && args[0] is JSONObject) {
-                val state = args[0] as JSONObject
-                // Invoke the new callback instead of setting state directly
-                onGameStateUpdate?.invoke(state)
-            }
+            (args.getOrNull(0) as? JSONObject)?.let { onGameStateUpdate?.invoke(it) }
         }
 
-        // Listener for a custom event named 'serverMessage' from the server.
-        // This event name must match what your Node.js server emits.
-        mSocket.on("serverMessage", Emitter.Listener { args ->
-            // Extract the message from the event arguments.
-            // Socket.IO events can send multiple arguments; here we expect the first to be a String.
-            val message = args[0] as String
-            onMessageReceived?.invoke(message) // Trigger the external message received callback
-        })
-
-        // You can add more listeners for other custom events specific to your application
-        // Example: mSocket.on("gameUpdate", Emitter.Listener { args -> ... })
+        mSocket.on("waitingForOpponent") {
+            Log.d("SocketIO", "⏳ Waiting for opponent...")
+            onWaitingForOpponent?.invoke()
+        }
+        mSocket.on("matchFound") { args ->
+            (args.getOrNull(0) as? JSONObject)?.let { data ->
+                val gameId = data.getString("gameId")
+                val gameState = data.getJSONObject("gameState")
+                this.currentGameId = gameId
+                Log.d("SocketIO", "🎉 Match found! Game ID: $gameId")
+                onMatchFound?.invoke(gameId, gameState)
+            }
+        }
+        mSocket.on("opponentDisconnected") {
+            Log.w("SocketIO", "Opponent has disconnected from the match.")
+            onOpponentDisconnected?.invoke()
+            currentGameId = null // Clear the current game
+        }
     }
 
-    /**
-     * Initiates the connection to the Socket.IO server.
-     */
     fun connect() {
-        mSocket.connect()
+        if (!mSocket.connected()) {
+            mSocket.connect()
+        }
+    }
+
+    fun joinPracticeGame() {
+        if (mSocket.connected()) {
+            val data = JSONObject().put("mode", "practice")
+            mSocket.emit("joinGame", data)
+        }
+    }
+
+    fun findMatch() {
+        if (mSocket.connected()) {
+            val data = JSONObject().put("mode", "match")
+            mSocket.emit("joinGame", data)
+        }
+    }
+
+    fun takeShot(angle: Float, power: Float) {
+        if (mSocket.connected() && currentGameId != null) {
+            val shotData = JSONObject().apply {
+                put("gameId", currentGameId)
+                put("angle", angle)
+                put("power", power)
+            }
+            mSocket.emit("takeShot", shotData)
+        } else {
+            Log.w("SocketIO", "Cannot take shot: Not in a game or socket disconnected.")
+        }
     }
 
     /**
@@ -114,7 +121,7 @@ class SecureWebSocketClient(
      *
      * @param message The string message to send.
      */
-    fun send(message: String) {
+    fun sendMessage(message: String) {
         if (mSocket.connected()) {
             mSocket.emit("message", message)
             Log.d("SocketIO", "Sent: $message")
@@ -123,30 +130,11 @@ class SecureWebSocketClient(
         }
     }
 
-    fun takeShot(gameId: String, angle: Float, power: Float) {
-        if (mSocket.connected()) {
-            val shotData = JSONObject().apply {
-                put("gameId", gameId)
-                put("angle", angle)
-                put("power", power)
-            }
-            mSocket.emit("takeShot", shotData)
-        }
-    }
-
-    /**
-     * Disconnects from the Socket.IO server.
-     */
     fun disconnect() {
         mSocket.disconnect()
+        currentGameId = null
         Log.d("SocketIO", "Client disconnected")
     }
 
-    /**
-     * Checks if the Socket.IO client is currently connected.
-     * @return True if connected, false otherwise.
-     */
-    fun isConnected(): Boolean {
-        return mSocket.connected()
-    }
+    fun isConnected(): Boolean = mSocket.connected()
 }

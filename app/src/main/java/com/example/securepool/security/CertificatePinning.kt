@@ -92,8 +92,8 @@ object CertificatePinning {
             (BuildConfig.CERT_PIN_PROD.isEmpty() || BuildConfig.CERT_PIN_PROD.startsWith("PLACEHOLDER"))) {
             if (BuildConfig.DEBUG) {
                 Log.w(TAG, "Using emergency development fallback pins - FOR DEVELOPMENT ONLY")
-                builder.add("10.0.2.2", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
-                builder.add("localhost", "sha256/bWsw3WqdtgiEWsOtKrjFEOAjebBzD4GruTg+uO0mQ8g=")
+                builder.add("10.0.2.2", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
+                builder.add("localhost", "sha256/LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=")
             } else {
                 Log.e(TAG, "No valid certificate pins configured for production build - this is a configuration error")
                 throw IllegalStateException("Certificate pinning cannot be initialized: no valid pins configured")

@@ -118,7 +118,7 @@ I/CertificatePinning: Certificate pinning is working correctly
 ### Documentation:
 - **Complete Guide**: `CERTIFICATE_PINNING_COMPLETE_GUIDE.md` - Comprehensive implementation and usage guide
 - **Testing Guide**: `HOW_TO_RUN_AND_TEST.md`
-
+3
 ---
 
 **Note**: The old method of manually installing certificates on the device is no longer needed. Certificate pinning is now handled automatically by the app code, providing stronger security than relying on the system certificate store.  

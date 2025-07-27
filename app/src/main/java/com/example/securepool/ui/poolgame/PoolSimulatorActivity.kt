@@ -1,5 +1,6 @@
 package com.example.securepool.ui.poolgame
 
+import android.app.Activity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,7 +18,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -38,257 +41,226 @@ class PoolSimulatorActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PoolSimulatorScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // State for game view controls
+    // State for game view and its controls
     val poolGameView = remember { PoolGameView(context, null) }
     var aimAngleDegrees by remember { mutableFloatStateOf(0f) }
     var shotPower by remember { mutableFloatStateOf(0.5f) }
-
-    // Message display for pocketed ball
     var gameMessage by remember { mutableStateOf("") }
 
-    // Set up callback for PoolGameView when 8-ball is pocketed
-    DisposableEffect(poolGameView) {
-        poolGameView.onEightBallPocketed = {
-            gameMessage = "Nice! You pocketed the 8-ball!"
-        }
-        onDispose {
-            poolGameView.onEightBallPocketed = null
-        }
-    }
+    // Set up and tear down callbacks and lifecycle observers for the PoolGameView
+    DisposableEffect(poolGameView, lifecycleOwner) {
+        // Set callbacks to link the View with Compose state
+        poolGameView.onAimAngleUpdated = { newAngle -> aimAngleDegrees = newAngle }
+        poolGameView.onEightBallPocketed = { gameMessage = "Nice! You pocketed the 8-ball!" }
 
-    // Lifecycle observer to ensure game thread stops/starts correctly
-    DisposableEffect(lifecycleOwner) {
+        // Observe lifecycle events to pause/resume the game thread
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> {
-                    if (poolGameView.gameThread?.running == false) {
-                        poolGameView.gameThread = poolGameView.GameThread(poolGameView.holder, poolGameView)
-                        poolGameView.gameThread?.running = true
-                        poolGameView.gameThread?.start()
-                    }
-                }
-                Lifecycle.Event.ON_PAUSE -> {
-                    poolGameView.gameThread?.running = false
-                }
+                Lifecycle.Event.ON_RESUME -> poolGameView.gameThread?.running = true
+                Lifecycle.Event.ON_PAUSE -> poolGameView.gameThread?.running = false
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-    // Pass the aimAngleDegrees state to PoolGameView and trigger redraw
-    DisposableEffect(poolGameView, aimAngleDegrees) {
-        poolGameView.aimAngleDegrees = aimAngleDegrees
-        onDispose { /* No specific cleanup needed here */ }
-    }
-
-    DisposableEffect(poolGameView) {
-        // Set the new callback to update the aim angle state
-        poolGameView.onAimAngleUpdated = { newAngle ->
-            aimAngleDegrees = newAngle
-        }
-        // Set the existing callback for the win condition
-        poolGameView.onEightBallPocketed = {
-            gameMessage = "Nice! You pocketed the 8-ball!"
-        }
 
         onDispose {
             poolGameView.onAimAngleUpdated = null
             poolGameView.onEightBallPocketed = null
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Local Pool Simulator") },
-                actions = {
-                    // Reset Button (moved back to top right, increased spacing and size/font)
-                    Button(
-                        onClick = {
-                            poolGameView.resetBalls()
-                            aimAngleDegrees = 0f
-                            shotPower = 0.5f
-                            gameMessage = ""
-                            if (poolGameView.gameThread?.running == false) {
-                                poolGameView.gameThread = poolGameView.GameThread(poolGameView.holder, poolGameView)
-                                poolGameView.gameThread?.running = true
-                                poolGameView.gameThread?.start()
-                            }
-                        },
-                        modifier = Modifier
-                            .width(100.dp) // Increased width for "Reset" text
-                            .height(40.dp)
-                            .padding(end = 16.dp) // Increased spacing from Exit button
-                    ) {
-                        Text("Reset", style = MaterialTheme.typography.labelSmall) // Decreased font size slightly
-                    }
+    // Update the PoolGameView's aim angle whenever the state changes
+    LaunchedEffect(aimAngleDegrees) {
+        poolGameView.aimAngleDegrees = aimAngleDegrees
+    }
 
-                    // Exit Button (remains at top right)
-                    Button(
-                        onClick = { (context as? ComponentActivity)?.finish() },
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(40.dp)
-                    ) {
-                        Text("Exit", style = MaterialTheme.typography.labelMedium)
+    Scaffold(
+        topBar = { TopBar(
+            onResetClick = {
+                poolGameView.resetBalls()
+                aimAngleDegrees = 0f
+                shotPower = 0.5f
+                gameMessage = ""
+            },
+            onExitClick = { (context as? Activity)?.finish() }
+        ) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = gameMessage,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                factory = { poolGameView }
+            )
+
+            GameControls(
+                shotPower = shotPower,
+                onPowerChange = { shotPower = it },
+                onAimChange = { aimAngleDegrees = (aimAngleDegrees + it + 360) % 360 },
+                onFireClick = {
+                    if (!poolGameView.isBallsMoving) {
+                        poolGameView.applyShot(aimAngleDegrees, shotPower)
+                        gameMessage = ""
+                    } else {
+                        Toast.makeText(context, "Balls are still moving!", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
-        },
-        content = { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Game Message Display
-                Text(
-                    text = gameMessage,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+        }
+    }
+}
 
-                // Pool Game View - Maximized
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
-                    factory = { poolGameView }
-                )
-
-                // Controls Area - Compacted and Side-by-Side
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Shot Power Bar and "Power" text
-                    Column(
-                        modifier = Modifier.weight(0.4f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Slider(
-                            value = shotPower,
-                            onValueChange = { newValue -> shotPower = newValue },
-                            valueRange = 0f..1f,
-                            steps = 19,
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .height(20.dp)
-                        )
-                        Text(
-                            "Power: ${(shotPower * 100).roundToInt()}%",
-                            style = MaterialTheme.typography.labelSmall,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-
-                    Spacer(Modifier.width(8.dp))
-
-                    // Aiming Controls & Fire Button - Closer to center, on Right
-                    Row(
-                        modifier = Modifier.weight(0.6f),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Left Rotation Buttons (No text, size-based differentiation)
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees - 2 + 360) % 360 },
-                            onLongPress = { aimAngleDegrees = (aimAngleDegrees - 5 + 360) % 360 },
-                            modifier = Modifier.size(35.dp) // New size for <<
-                        ) { /* No text */ }
-                        Spacer(Modifier.width(2.dp))
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees - 1 + 360) % 360 },
-                            modifier = Modifier.size(30.dp) // New size for <
-                        ) { /* No text */ }
-                        Spacer(Modifier.width(2.dp))
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees - 0.1f + 360) % 360 },
-                            modifier = Modifier.size(25.dp) // New size for .
-                        ) { /* No text */ }
-                        Spacer(Modifier.width(4.dp))
-
-                        // Fire Button (Cue) - White circle with red dot, pink border, no text
-                        Button(
-                            onClick = {
-                                if (!poolGameView.isBallsMoving) {
-                                    poolGameView.applyShot(aimAngleDegrees, shotPower)
-                                    gameMessage = ""
-                                    if (poolGameView.gameThread?.running == false) {
-                                        poolGameView.gameThread = poolGameView.GameThread(poolGameView.holder, poolGameView)
-                                        poolGameView.gameThread?.running = true
-                                        poolGameView.gameThread?.start()
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Balls are still moving!", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier
-                                .size(50.dp)
-                                .background(Color.White, CircleShape)
-                                .border(2.dp, Color(0xFFF0B2EE), CircleShape), // Pink border
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .background(Color.Red, CircleShape)
-                            )
-                        }
-                        Spacer(Modifier.width(4.dp))
-
-                        // Right Rotation Buttons (No text, size-based differentiation)
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees + 0.1f) % 360 },
-                            modifier = Modifier.size(25.dp) // New size for .
-                        ) { /* No text */ }
-                        Spacer(Modifier.width(2.dp))
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees + 1) % 360 },
-                            modifier = Modifier.size(30.dp) // New size for >
-                        ) { /* No text */ }
-                        Spacer(Modifier.width(2.dp))
-                        RepeatableButton(
-                            onClick = { aimAngleDegrees = (aimAngleDegrees + 2 + 360) % 360 },
-                            onLongPress = { aimAngleDegrees = (aimAngleDegrees + 5 + 360) % 360 },
-                            modifier = Modifier.size(35.dp) // New size for >>
-                        ) { /* No text */ }
-                    }
-                }
-            }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopBar(onResetClick: () -> Unit, onExitClick: () -> Unit) {
+    TopAppBar(
+        title = { Text("Local Pool Simulator") },
+        actions = {
+            Button(onClick = onResetClick) { Text("Reset") }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = onExitClick) { Text("Exit") }
+            Spacer(Modifier.width(8.dp))
         }
     )
 }
 
+@Composable
+private fun GameControls(
+    shotPower: Float,
+    onPowerChange: (Float) -> Unit,
+    onAimChange: (Float) -> Unit,
+    onFireClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(0.4f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Slider(
+                value = shotPower,
+                onValueChange = onPowerChange,
+                valueRange = 0.0f..1.0f
+            )
+            Text(
+                "Power: ${(shotPower * 100).roundToInt()}%",
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        AimAndFireControls(
+            modifier = Modifier.weight(0.6f),
+            onAimChange = onAimChange,
+            onFireClick = onFireClick
+        )
+    }
+}
+
+@Composable
+private fun AimAndFireControls(
+    modifier: Modifier = Modifier,
+    onAimChange: (Float) -> Unit,
+    onFireClick: () -> Unit
+) {
+    val aimControls = listOf(
+        AimControl(-5f, -2f, 35.dp), // Fine & Coarse Left
+        AimControl(-1f, -1f, 30.dp), // Normal Left
+        AimControl(-0.1f, -0.1f, 25.dp), // Micro Left
+        AimControl(0.1f, 0.1f, 25.dp), // Micro Right
+        AimControl(1f, 1f, 30.dp), // Normal Right
+        AimControl(2f, 5f, 35.dp) // Coarse & Fine Right
+    )
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Left Aiming Buttons
+        aimControls.take(3).forEach { control ->
+            RepeatableAimButton(control = control, onAim = onAimChange)
+            Spacer(Modifier.width(2.dp))
+        }
+
+        Spacer(Modifier.width(4.dp))
+        FireButton(onClick = onFireClick)
+        Spacer(Modifier.width(4.dp))
+
+        // Right Aiming Buttons
+        aimControls.drop(3).forEach { control ->
+            RepeatableAimButton(control = control, onAim = onAimChange)
+            Spacer(Modifier.width(2.dp))
+        }
+    }
+}
+
+private data class AimControl(val increment: Float, val longIncrement: Float, val size: Dp)
+
+@Composable
+private fun RepeatableAimButton(control: AimControl, onAim: (Float) -> Unit) {
+    RepeatableButton(
+        onClick = { onAim(control.increment) },
+        onLongPress = { onAim(control.longIncrement) },
+        modifier = Modifier.size(control.size)
+    ) {}
+}
+
+@Composable
+private fun FireButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .size(50.dp)
+            .border(2.dp, Color(0xFFF0B2EE), CircleShape), // Pink border
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .background(Color.Red, CircleShape)
+        )
+    }
+}
+
 /**
- * A custom Composable button that supports both a regular click and a continuous action on long press.
+ * A custom button that supports a regular click and a continuous action on long press.
  */
 @Composable
-fun RepeatableButton(
+private fun RepeatableButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onLongPress: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isPressed = interactionSource.collectIsPressedAsState().value
+    val isPressed by interactionSource.collectIsPressedAsState()
 
     Button(
         onClick = onClick,
@@ -298,11 +270,11 @@ fun RepeatableButton(
     )
 
     if (isPressed && onLongPress != null) {
-        LaunchedEffect(Unit) {
-            delay(300)
-            while (isPressed) {
+        LaunchedEffect(isPressed) {
+            delay(300) // Initial delay before repeating
+            while (true) { // Will be cancelled when isPressed becomes false
                 onLongPress()
-                delay(100)
+                delay(100) // Delay between repeats
             }
         }
     }

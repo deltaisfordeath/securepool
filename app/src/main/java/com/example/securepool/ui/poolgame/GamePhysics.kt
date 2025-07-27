@@ -1,7 +1,7 @@
 package com.example.securepool.ui.poolgame
 
 import com.example.localpoolsimulator.Ball
-import kotlin.math.*
+import kotlin.math.sqrt
 
 /**
  * Represents a pocket on the pool table, using virtual coordinates.
@@ -13,46 +13,34 @@ data class Pocket(val x: Float, val y: Float, val radius: Float)
 
 /**
  * Utility object for handling simplified 2D pool physics calculations.
- * This version uses a fixed, internal virtual coordinate system to ensure
- * consistency between the client and server.
+ * This version uses the centralized GameConstants for all physics values.
  */
 object GamePhysics {
 
-    // --- Virtual World Constants (Must match server and PoolGameView) ---
-    private const val VIRTUAL_WIDTH = 2000f
-    private const val VIRTUAL_HEIGHT = 1000f
-    private const val VIRTUAL_CUSHION_THICKNESS = 40f
-
     /**
      * Handles collision between a ball and the table boundaries (walls/cushions).
-     * This function now uses the internal virtual constants.
      * @param ball The ball to check.
      */
     fun handleWallCollision(ball: Ball) {
-        val restitution = 0.8f // Bounciness factor
+        val minX = GameConstants.VIRTUAL_CUSHION_THICKNESS + ball.radius
+        val maxX = GameConstants.VIRTUAL_WIDTH - GameConstants.VIRTUAL_CUSHION_THICKNESS - ball.radius
+        val minY = GameConstants.VIRTUAL_CUSHION_THICKNESS + ball.radius
+        val maxY = GameConstants.VIRTUAL_HEIGHT - GameConstants.VIRTUAL_CUSHION_THICKNESS - ball.radius
 
-        // Define the inner bounds of the playing surface using the virtual constants
-        val minX = VIRTUAL_CUSHION_THICKNESS + ball.radius
-        val maxX = VIRTUAL_WIDTH - VIRTUAL_CUSHION_THICKNESS - ball.radius
-        val minY = VIRTUAL_CUSHION_THICKNESS + ball.radius
-        val maxY = VIRTUAL_HEIGHT - VIRTUAL_CUSHION_THICKNESS - ball.radius
-
-        // Check horizontal walls
-        if (ball.x < minX) { // Left wall
+        if (ball.x <= minX) {
             ball.x = minX
-            ball.velocityX *= -restitution
-        } else if (ball.x > maxX) { // Right wall
+            ball.velocityX *= -GameConstants.WALL_RESTITUTION
+        } else if (ball.x >= maxX) {
             ball.x = maxX
-            ball.velocityX *= -restitution
+            ball.velocityX *= -GameConstants.WALL_RESTITUTION
         }
 
-        // Check vertical walls
-        if (ball.y < minY) { // Top wall
+        if (ball.y <= minY) {
             ball.y = minY
-            ball.velocityY *= -restitution
-        } else if (ball.y > maxY) { // Bottom wall
+            ball.velocityY *= -GameConstants.WALL_RESTITUTION
+        } else if (ball.y >= maxY) {
             ball.y = maxY
-            ball.velocityY *= -restitution
+            ball.velocityY *= -GameConstants.WALL_RESTITUTION
         }
     }
 
@@ -65,10 +53,12 @@ object GamePhysics {
     fun handleBallCollision(b1: Ball, b2: Ball) {
         val dx = b2.x - b1.x
         val dy = b2.y - b1.y
-        val distance = sqrt(dx * dx + dy * dy)
+        val distanceSquared = dx * dx + dy * dy
+        val combinedRadius = b1.radius + b2.radius
 
         // Check if balls are overlapping (collision occurred)
-        if (distance < b1.radius + b2.radius) {
+        if (distanceSquared < combinedRadius * combinedRadius) {
+            val distance = sqrt(distanceSquared)
             // Calculate unit normal and tangent vectors
             val nx = dx / distance
             val ny = dy / distance
@@ -81,7 +71,7 @@ object GamePhysics {
             val v2n = b2.velocityX * nx + b2.velocityY * ny
             val v2t = b2.velocityX * tx + b2.velocityY * ty
 
-            // For elastic collision (assuming equal mass), swap normal velocities
+            // In an elastic collision with equal mass, normal velocities are swapped
             val v1nAfter = v2n
             val v2nAfter = v1n
 
@@ -91,12 +81,12 @@ object GamePhysics {
             b2.velocityX = v2nAfter * nx + v2t * tx
             b2.velocityY = v2nAfter * ny + v2t * ty
 
-            // Separate overlapping balls to prevent multiple collisions in one frame
-            val overlap = (b1.radius + b2.radius) - distance
-            b1.x -= overlap * nx * 0.5f
-            b1.y -= overlap * ny * 0.5f
-            b2.x += overlap * nx * 0.5f
-            b2.y += overlap * ny * 0.5f
+            // Separate overlapping balls to prevent them from getting stuck
+            val overlap = 0.5f * (combinedRadius - distance)
+            b1.x -= overlap * nx
+            b1.y -= overlap * ny
+            b2.x += overlap * nx
+            b2.y += overlap * ny
         }
     }
 
@@ -110,9 +100,11 @@ object GamePhysics {
         for (pocket in pockets) {
             val dx = ball.x - pocket.x
             val dy = ball.y - pocket.y
-            val distance = sqrt(dx * dx + dy * dy)
-            // Ball is considered pocketed if its center is within the pocket's radius.
-            if (distance < pocket.radius + ball.radius * 0.5f) {
+            val distanceSquared = dx * dx + dy * dy
+            // Ball is pocketed if its center is within the pocket's radius.
+            // Using squared distances is faster as it avoids a square root calculation.
+            val effectivePocketRadius = pocket.radius + ball.radius * 0.5f
+            if (distanceSquared < effectivePocketRadius * effectivePocketRadius) {
                 return true
             }
         }

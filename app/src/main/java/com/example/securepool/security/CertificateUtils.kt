@@ -2,36 +2,42 @@ package com.example.securepool.security
 
 import android.content.Context
 import android.util.Log
+import com.example.securepool.BuildConfig
 
 /**
- * Utility class to help with certificate pinning setup.
- * Run this once in development to get the SHA-256 hash of your certificate.
+ * Utility class to assist with certificate pinning setup.
+ * Use this during development to extract the SHA-256 hash of the server certificate.
  */
 object CertificateUtils {
-    
+
     private const val TAG = "CertificateUtils"
-    
+
     /**
-     * Call this method in your Application class or main activity during development
-     * to get the SHA-256 hash of your certificate for pinning.
+     * Logs the SHA-256 hash of the certificate used in assets (securepool_cert.pem).
+     * You can run this from your Application class or main activity *during development*.
      */
     fun logCertificateHash(context: Context) {
+        if (!BuildConfig.DEBUG) {
+            Log.w(TAG, "⚠️ CertificateUtils should only be used in DEBUG builds!")
+        }
+
         val hash = CertificatePinning.getCertificateHash(context)
         if (hash != null) {
-            Log.d(TAG, "Certificate SHA-256 Hash: sha256:$hash")
-            Log.d(TAG, "Use this hash in your CertificatePinner configuration")
+            Log.i(TAG, "📌 Certificate SHA-256 Hash: sha256:$hash")
+            Log.i(TAG, "✅ Use this hash in your CertificatePinner configuration.")
         } else {
-            Log.e(TAG, "Failed to generate certificate hash")
+            Log.e(TAG, "❌ Failed to generate certificate hash")
         }
     }
-    
+
     /**
-     * Alternative method using OkHttp's built-in certificate pinner helper.
-     * This will log the pin when a connection is made with an unpinned certificate.
+     * Instructs developers on how to extract certificate pins dynamically from OkHttp logs.
+     * This is useful when you don't have access to the certificate file directly.
      */
     fun logCertificatePinsOnConnection() {
-        Log.d(TAG, "To get certificate pins from a real connection, temporarily remove")
-        Log.d(TAG, "certificate pinning and check the logs when making a request.")
-        Log.d(TAG, "OkHttp will log the pins you should use.")
+        Log.i(TAG, "ℹ️ To get certificate pins from a real HTTPS connection:")
+        Log.i(TAG, "   1. Temporarily disable certificate pinning.")
+        Log.i(TAG, "   2. Make a network request with OkHttp.")
+        Log.i(TAG, "   3. Check Logcat for: 'Certificate pinning failure!' → Suggested pins.")
     }
 }

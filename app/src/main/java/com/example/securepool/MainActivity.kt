@@ -1,6 +1,6 @@
 package com.example.securepool
 
-import SecurePoolHomeScreen
+import com.example.securepool.SecurePoolHomeScreen
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast

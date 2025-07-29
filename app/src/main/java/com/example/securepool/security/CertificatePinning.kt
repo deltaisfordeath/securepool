@@ -16,7 +16,16 @@ object CertificatePinning {
 
     fun createSecureClient(context: Context): OkHttpClient.Builder {
         val builder = OkHttpClient.Builder()
-
+        
+        // Security Check: Verify device integrity before enabling certificate pinning
+        val securityReport = DeviceSecurityChecker.getSecurityReport(context)
+        if (!securityReport.overallSecure && !BuildConfig.DEBUG) {
+            Log.e(TAG, "Device security compromised: ${securityReport.getSecurityIssues()}")
+            // In production, you might want to refuse connections or use additional security measures
+            // For now, we'll log the warning but continue with certificate pinning
+        }
+        
+        // Debug-only disable check - NEVER active in production builds
         if (BuildConfig.DEBUG && BuildConfig.DEBUG_DISABLE_CERT_PINNING) {
             Log.w(TAG, "WARNING: Certificate pinning is DISABLED - DEBUG BUILD ONLY!")
             return builder

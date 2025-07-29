@@ -34,6 +34,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService = RetrofitClient.create(application)
     private val tokenManager = TokenManager(application)
 
+    private val biometricKeyManager = BiometricKeyManager(application)
+
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
@@ -50,6 +52,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setBiometricRegistered(isRegistered: Boolean) {
         _uiState.update { it.copy(isBiometricRegistered = isRegistered) }
+    }
+
+    fun removeBiometricKey() {
+        biometricKeyManager.deleteKeyPair()
     }
 
     fun loadData() {

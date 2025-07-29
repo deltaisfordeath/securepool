@@ -25,7 +25,8 @@ fun SecurePoolHomeScreen(
     onRestoreScore: () -> Unit,
     onFindOpponent: () -> String?,
     onRefresh: () -> Unit,
-    onRegisterBiometric: () -> Unit
+    onRegisterBiometric: () -> Unit,
+    removeBiometricLogin: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -82,6 +83,11 @@ fun SecurePoolHomeScreen(
 
                 Button(onClick = { context.startActivity(Intent(context, LeaderboardActivity::class.java)) }) {
                     Text("Show Ranking")
+                }
+                if (uiState.isBiometricAvailable && !uiState.isBiometricRegistered) {
+                    Button(onClick = { removeBiometricLogin() }) {
+                        Text("Remove Biometric Login")
+                    }
                 }
                 if (uiState.isBiometricAvailable && !uiState.isBiometricRegistered) {
                     Button(onClick = {

@@ -55,7 +55,8 @@ class MainActivity : ComponentActivity() {
                     onRestoreScore = { viewModel.restoreScore() },
                     onFindOpponent = { viewModel.findOpponent() },
                     onRefresh = { viewModel.loadData() },
-                    onRegisterBiometric = {viewModel.registerBiometricKey()}
+                    onRegisterBiometric = {viewModel.registerBiometricKey()},
+                    removeBiometricLogin = {viewModel.removeBiometricKey()}
                 )
             }
         }

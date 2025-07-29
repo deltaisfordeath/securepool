@@ -15,3 +15,9 @@
 local.properties
 node_modules/
 .env
+
+# Local documentation files (not ready for commit)
+CODE_REVIEW_SUMMARY.md
+MOBILE_SECURITY_CAPSTONE_SUMMARY.md
+PROJECT_COMPLETION_PLAN.md
+SECURITY_ROADMAP.md

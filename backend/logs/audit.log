@@ -263,3 +263,43 @@
 [2025-07-29T00:15:33.055Z] EVENT: Login Attempt username=gamerA result=invalid password or user
 [2025-07-29T00:15:34.071Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
 [2025-07-29T00:15:34.146Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T23:27:19.847Z] EVENT: HTTP Request method=GET url=/api/challenge?username=kenny body={}
+[2025-07-29T23:27:24.288Z] EVENT: HTTP Request method=POST url=/api/challenge body={"signedChallenge":"MEUCIFsyZG1xK0lNiXosznzgwza1JXZsX+DKTvMnfOAg6d1TAiEAnEd2aGCZvC1o4OdRhl1ai3V69tdpyah6ylmBhfWAkoA=","userId":"kenny"}
+[2025-07-29T23:27:24.292Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-29T23:27:37.128Z] EVENT: HTTP Request method=GET url=/api/challenge?username=kenny body={}
+[2025-07-29T23:27:43.490Z] EVENT: HTTP Request method=POST url=/api/challenge body={"signedChallenge":"MEUCIQCwzFNlG3a3FV4d9VmVshoV+4olfpwHcRGhj6ZHw9O+ZQIgVvajJeo7uYec86MeUgvRnQWouG6cUkJ8smfsUoNR1cM=","userId":"kenny"}
+[2025-07-29T23:27:43.493Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-29T23:29:17.622Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"password","username":"kenny"}
+[2025-07-29T23:29:17.678Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-29T23:29:18.216Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:29:18.331Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:29:18.453Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:29:18.459Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:29:28.154Z] EVENT: HTTP Request method=GET url=/api/challenge?username=kenny body={}
+[2025-07-29T23:29:32.897Z] EVENT: HTTP Request method=GET url=/api/challenge?username=kenny body={}
+[2025-07-29T23:30:05.014Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"password","username":"kenny"}
+[2025-07-29T23:30:05.074Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-29T23:30:05.288Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:30:05.307Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:30:05.423Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:30:05.440Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:35:47.046Z] EVENT: HTTP Request method=GET url=/api/challenge?username=kenny body={}
+[2025-07-29T23:35:55.878Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"password","username":"kenny"}
+[2025-07-29T23:35:55.936Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-29T23:35:56.416Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:35:56.468Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:35:56.697Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:35:56.746Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:36:08.368Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"password","username":"kenny"}
+[2025-07-29T23:36:08.428Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-29T23:36:08.755Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:36:08.834Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:36:08.932Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:36:08.936Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:36:11.870Z] EVENT: HTTP Request method=POST url=/api/register-biometric body={"publicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/An8tLK1gMuF5BOmibz4HTdtut8UwQUOpOlEo9Fin1Qp3hwHSzPK7MY1IANTNnK3yrW3dUoJLuIhsVdTjZVvhg=="}
+[2025-07-29T23:36:43.208Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:36:47.123Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:36:47.227Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:36:50.967Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:36:52.854Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:36:52.953Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}

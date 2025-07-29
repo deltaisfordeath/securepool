@@ -11,11 +11,7 @@ import com.example.securepool.model.RegisterRequest
 import com.example.securepool.api.TokenManager
 import com.example.securepool.model.SignedChallengeRequest
 import com.example.securepool.ui.NavigationEvent
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
@@ -33,11 +29,18 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _registerRateLimitEvent = MutableSharedFlow<Boolean>()
+    val registerRateLimitEvent = _registerRateLimitEvent.asSharedFlow()
+
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     private val _showBiometricPromptRequest = MutableSharedFlow<String>()
     val showBiometricPromptRequest = _showBiometricPromptRequest.asSharedFlow()
+
+    // ✅ Added: Emits when HTTP 429 is hit
+    private val _rateLimitEvent = MutableSharedFlow<Boolean>()
+    val rateLimitEvent = _rateLimitEvent.asSharedFlow()
 
     private val apiService = RetrofitClient.create(application)
     private val tokenManager = TokenManager(application)
@@ -67,15 +70,16 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setBiometricRegistered(isRegistered: Boolean) {
-        _uiState.update { it.copy(isBiometricRegistered = isRegistered)}
+        _uiState.update { it.copy(isBiometricRegistered = isRegistered) }
     }
 
-    /**
-     * Step 1: User clicks biometric login. ViewModel fetches the challenge.
-     */
     fun onBiometricLoginClicked() {
         if (_uiState.value.username.isBlank()) {
-            Toast.makeText(getApplication(), "Please enter your username first.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                getApplication(),
+                "Please enter your username first.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
         _uiState.update { it.copy(isLoading = true) }
@@ -84,10 +88,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 val challengeResponse = apiService.getChallenge(_uiState.value.username)
                 if (challengeResponse.isSuccessful && challengeResponse.body() != null) {
                     val challenge = challengeResponse.body()!!.challenge
-                    // Step 2: Emit challenge to Activity to trigger the prompt
                     _showBiometricPromptRequest.emit(challenge)
                 } else {
-                    Toast.makeText(getApplication(), "Could not get challenge from server.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        getApplication(),
+                        "Could not get challenge from server.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -97,9 +104,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Step 4: Called from the Activity with the signed challenge to complete login.
-     */
     fun loginWithSignedChallenge(signedChallengeBase64: String) {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
@@ -112,7 +116,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     tokenManager.saveUsername(body.username)
                     _navigationEvent.emit(NavigationEvent.NavigateToHome)
                 } else {
-                    Toast.makeText(getApplication(), "Biometric login failed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "Biometric login failed.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -125,7 +130,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun loginUser() {
         val currentState = _uiState.value
         if (currentState.username.isBlank() || currentState.password.isBlank()) {
-            Toast.makeText(getApplication(), "Username and password cannot be empty.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                getApplication(),
+                "Username and password cannot be empty.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -137,6 +146,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 val response = apiService.loginUser(request)
                 val body = response.body()
 
+                // ✅ Handle HTTP 429 rate limit
+                if (response.code() == 429) {
+                    _rateLimitEvent.emit(true)
+                    _uiState.update { it.copy(isLoading = false) }
+                    return@launch
+                }
+
                 if (response.isSuccessful && body != null && body.accessToken != null && body.refreshToken != null) {
                     tokenManager.saveTokens(body.accessToken, body.refreshToken)
                     tokenManager.saveUsername(body.username)
@@ -144,12 +160,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     val errorMessage = when {
                         response.code() == 401 -> "Invalid credentials"
-                        else -> "An unknown error occurred."}
+                        else -> "An unknown error occurred."
+                    }
                     Toast.makeText(getApplication(), errorMessage, Toast.LENGTH_LONG).show()
                     _uiState.update { it.copy(isLoading = false) }
                 }
             } catch (e: Exception) {
-                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG)
+                    .show()
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -158,7 +176,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun registerUser() {
         val currentState = _uiState.value
         if (currentState.username.isBlank() || currentState.password.isBlank()) {
-            Toast.makeText(getApplication(), "Username and password cannot be empty.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                getApplication(),
+                "Username and password cannot be empty.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -171,8 +193,16 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     else -> null
                 }
 
-                val request = RegisterRequest(currentState.username, currentState.password, publicKey)
+                val request =
+                    RegisterRequest(currentState.username, currentState.password, publicKey)
                 val response = apiService.registerUser(request)
+
+                // ✅ Detect HTTP 429 Too Many Requests
+                if (response.code() == 429) {
+                    _registerRateLimitEvent.emit(true)
+                    _uiState.update { it.copy(isLoading = false) }
+                    return@launch
+                }
 
                 val body = response.body()
 
@@ -185,7 +215,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     Toast.makeText(getApplication(), errorMsg, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(getApplication(), "Network error: ${e.message}", Toast.LENGTH_LONG)
+                    .show()
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }

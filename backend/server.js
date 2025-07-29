@@ -13,10 +13,16 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { logAudit } from './utils/auditLogger.js';
 import { logAuditEvent } from './utils/logAuditEvent.js';
+import { generalLimiter, loginLimiter, registerLimiter } from './rateLimiter.js'; // ✅ added
 
 const app = express();
 app.use(cors());
 app.use(json());
+// ✅ Apply rate limiting
+app.use(generalLimiter);
+app.use('/api/login', loginLimiter);
+app.use('/api/register', registerLimiter);
+
 
 const options = {
   key: fs.readFileSync('./dev_cert/securepool_key.pem'),

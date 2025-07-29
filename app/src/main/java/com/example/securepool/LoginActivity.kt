@@ -74,6 +74,21 @@ class LoginActivity : FragmentActivity() {
                         }
                     }
                 }
+                // ✅ Add this block
+                LaunchedEffect(Unit) {
+                    viewModel.rateLimitEvent.collect {
+                        Toast.makeText(this@LoginActivity, "Too many login attempts. Please try again later.", Toast.LENGTH_LONG).show()
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    viewModel.registerRateLimitEvent.collect {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Too many registration attempts. Please try again later.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
 
                 LoginScreen(
                     uiState = uiState,

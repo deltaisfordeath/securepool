@@ -123,3 +123,143 @@
 [2025-07-28T20:58:28.003Z] EVENT: HTTP Request method=GET url=/api/score?username=gamert body={}
 [2025-07-28T20:58:28.100Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
 [2025-07-28T20:58:28.122Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-28T22:07:56.235Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:07:56.313Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:07:57.649Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:07:57.726Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:07:58.938Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:07:59.012Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:07:59.789Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:07:59.865Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:08:00.586Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:08:00.661Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:19:26.539Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:19:26.617Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:19:31.546Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:19:31.622Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:19:32.115Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:19:32.193Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:19:32.523Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:19:32.601Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:19:32.988Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:19:33.064Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:40:18.531Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:40:18.611Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:40:19.321Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:40:19.416Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:40:20.337Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:40:20.413Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:40:20.880Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:40:20.955Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:40:21.371Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"axzz","username":"gamert"}
+[2025-07-28T22:40:21.445Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:56:53.843Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T22:56:53.923Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:56:55.514Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T22:56:55.591Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:56:56.564Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T22:56:56.641Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:56:57.362Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T22:56:57.440Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T22:56:58.026Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T22:56:58.102Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:06:57.386Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T23:06:57.460Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:06:58.361Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T23:06:58.436Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:06:58.928Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T23:06:59.006Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:06:59.457Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T23:06:59.538Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:06:59.996Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"fdfdf","username":"gamert"}
+[2025-07-28T23:07:00.072Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:10:16.499Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"fssd","username":"gamert"}
+[2025-07-28T23:10:16.579Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:10:19.385Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"fssd","username":"gamert"}
+[2025-07-28T23:10:19.461Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:10:21.559Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"fssd","username":"gamert"}
+[2025-07-28T23:10:21.637Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:10:22.217Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"fssd","username":"gamert"}
+[2025-07-28T23:10:22.295Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:10:22.770Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"fssd","username":"gamert"}
+[2025-07-28T23:10:22.847Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:27:24.379Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:27:24.463Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:27:25.671Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:27:25.750Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:27:27.095Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:27:27.168Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:27:28.600Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:27:28.674Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:27:30.580Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:27:30.656Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:10.057Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:10.138Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:11.219Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:11.295Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:12.031Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:12.106Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:12.737Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:12.817Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:13.439Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:13.515Z] EVENT: Login Attempt username=gamert result=invalid password or user
+[2025-07-28T23:36:31.179Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:31.254Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:36:32.247Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:32.323Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:36:33.224Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:33.302Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:36:34.184Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:34.259Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:36:35.110Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"jhg","username":"gamert"}
+[2025-07-28T23:36:35.186Z] EVENT: User Register Failed username=gamert error=Username already exists
+[2025-07-28T23:47:35.719Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123","username":"gamerA"}
+[2025-07-28T23:47:35.799Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:47:37.199Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123","username":"gamerA"}
+[2025-07-28T23:47:37.274Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:47:37.966Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123","username":"gamerA"}
+[2025-07-28T23:47:38.041Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:47:38.871Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123","username":"gamerA"}
+[2025-07-28T23:47:38.945Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:47:39.676Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123","username":"gamerA"}
+[2025-07-28T23:47:39.753Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:53:39.151Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:53:39.230Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-28T23:53:40.478Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:53:40.553Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-28T23:53:41.560Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:53:41.635Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-28T23:53:42.553Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:53:42.628Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-28T23:53:43.470Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:53:43.544Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-28T23:54:32.923Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:54:32.999Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:54:34.910Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:54:34.986Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:54:35.781Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:54:35.855Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:54:36.597Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:54:36.672Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-28T23:54:37.606Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-28T23:54:37.680Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T00:15:19.953Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:20.029Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-29T00:15:23.271Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:23.364Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T00:15:26.054Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:26.128Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-29T00:15:28.124Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:28.198Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T00:15:29.150Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:29.228Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-29T00:15:29.844Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:29.923Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T00:15:30.953Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:31.028Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-29T00:15:31.917Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:31.991Z] EVENT: User Register Failed username=gamerA error=Username already exists
+[2025-07-29T00:15:32.980Z] EVENT: HTTP Request method=POST url=/api/login body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:33.055Z] EVENT: Login Attempt username=gamerA result=invalid password or user
+[2025-07-29T00:15:34.071Z] EVENT: HTTP Request method=POST url=/api/register body={"password":"a123as","username":"gamerA"}
+[2025-07-29T00:15:34.146Z] EVENT: User Register Failed username=gamerA error=Username already exists

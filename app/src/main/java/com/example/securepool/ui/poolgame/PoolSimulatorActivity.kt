@@ -179,8 +179,18 @@ fun MainMenuScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Secure Pool", style = MaterialTheme.typography.displayMedium)
-        Spacer(Modifier.height(48.dp))
+        Text("SecurePool", style = MaterialTheme.typography.displayMedium)
+        Spacer(Modifier.height(24.dp))
+        AnimatedVisibility(visible = statusMessage.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (statusMessage.contains("Waiting") || statusMessage.contains("Connecting")) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(statusMessage, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        Spacer(Modifier.height(24.dp))
         Button(
             onClick = onPracticeClick,
             modifier = Modifier
@@ -197,16 +207,6 @@ fun MainMenuScreen(
                 .height(50.dp)
         ) {
             Text("Find a Match")
-        }
-        Spacer(Modifier.height(32.dp))
-        AnimatedVisibility(visible = statusMessage.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (statusMessage.contains("Waiting") || statusMessage.contains("Connecting")) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(8.dp))
-                }
-                Text(statusMessage, style = MaterialTheme.typography.bodyLarge)
-            }
         }
     }
 }

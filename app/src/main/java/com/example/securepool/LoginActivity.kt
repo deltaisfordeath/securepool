@@ -201,7 +201,7 @@ fun LoginScreen(
                 Button(
                     onClick = onLoginClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
@@ -212,7 +212,6 @@ fun LoginScreen(
             }
 
             if (uiState.isBiometricAvailable && uiState.isBiometricRegistered) {
-                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -220,7 +219,7 @@ fun LoginScreen(
                     Button(
                         onClick = onBiometricLoginClicked,
                         enabled = !uiState.isLoading && isUsernamePopulated,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).height(50.dp)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
@@ -235,7 +234,6 @@ fun LoginScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -243,7 +241,7 @@ fun LoginScreen(
                 Button(
                     onClick = onRegisterClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

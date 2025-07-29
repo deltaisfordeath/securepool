@@ -5,16 +5,14 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.securepool.ui.model.HomeUiState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.example.securepool.BiometricKeyManager
 import com.example.securepool.GameActivity
 import com.example.securepool.LeaderboardActivity
-import com.example.securepool.PracticeActivity
-import com.example.securepool.ui.model.HomeViewModel
 import com.example.securepool.ui.poolgame.PoolSimulatorActivity
 
 
@@ -54,40 +52,78 @@ fun SecurePoolHomeScreen(
             if (uiState.isLoading) {
                 CircularProgressIndicator()
             } else {
-                Text("Current Score: ${uiState.score}", style = MaterialTheme.typography.headlineSmall)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("SecurePool", style = MaterialTheme.typography.displayMedium)
 
-                // The "Start Match" button now has two functions based on score
-                Button(onClick = {
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    Text(
+                        "Current Score: ${uiState.score}",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    Button(
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    PoolSimulatorActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    )
+                    {
+                        Text("Play Pool!")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    LeaderboardActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    )
+                    {
+                        Text("Show Ranking")
+                    }
+
                     if (uiState.score == 0) {
-                        // Logic for cooldown can be added in the ViewModel if needed
-                        onRestoreScore()
-                    } else {
-                        val opponent = onFindOpponent() // Get the opponent's username
-                        if (opponent != null) {
-                            val intent = Intent(context, GameActivity::class.java).apply {
-                                putExtra("OPPONENT_USERNAME", opponent)
-                            }
-                            context.startActivity(intent)
-                        } else {
-                            // Handle case where no opponent is found
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { onRestoreScore() },
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
+                        )
+                        {
+                            Text("Restore Score")
                         }
                     }
-                }) {
-                    Text(if (uiState.score == 0) "Restore Score" else "Start Match")
-                }
 
-                Button(onClick = { context.startActivity(Intent(context, PoolSimulatorActivity::class.java)) }) {
-                    Text("Practice Room")
-                }
+                    if (uiState.isBiometricAvailable && !uiState.isBiometricRegistered) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { context.startActivity(Intent(context, LeaderboardActivity::class.java)) }) {
-                    Text("Show Ranking")
-                }
-                if (uiState.isBiometricAvailable && !uiState.isBiometricRegistered) {
-                    Button(onClick = {
-                        onRegisterBiometric()
-                    }) {
-                        Text("Enable Biometric Login")
+                        Button(
+                            onClick = { onRegisterBiometric() },
+                            modifier = Modifier.fillMaxWidth().height(50.dp)
+                        )
+                        {
+                            Text("Enable Biometric Login")
+                        }
                     }
                 }
             }

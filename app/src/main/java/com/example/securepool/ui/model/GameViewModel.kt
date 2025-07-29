@@ -41,13 +41,8 @@ class GameViewModel(
         socketClient = SecureWebSocketClient(getApplication())
         socketClient.connect()
 
-        // Optional: Send hello message to opponent
-        socketClient.sendMessage("Hello $opponentUsername from ${socketClient.hashCode()}")
     }
 
-    fun sendMessage() {
-        socketClient.sendMessage("This is a message from ${uiState.value.playerUsername}")
-    }
 
     private fun loadInitialScores() {
         viewModelScope.launch {

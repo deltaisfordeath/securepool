@@ -19,6 +19,13 @@ const checkColumnQuery = `
       AND COLUMN_NAME = 'publicKey'
     `;
 
+const checkLoginColumnQuery = `
+      SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = ? 
+      AND TABLE_NAME = 'users' 
+      AND COLUMN_NAME = 'failedLoginAttempts'
+    `;
+
 const createChallengeTableQuery = `
     CREATE TABLE challenges (
         username VARCHAR(100) PRIMARY KEY,
@@ -104,6 +111,22 @@ export default async function initializeDatabase() {
                 console.log("Column 'publicKey' added successfully! ✨");
             } else {
                 console.log("Column 'publicKey' already exists. No action taken. 👍");
+            }
+
+            const [loginRows] = await connection.execute(checkLoginColumnQuery, [database_name]);
+
+            if (loginRows.length === 0) {
+                console.log("Column 'failedLoginAttempts' does not exist. Adding it now... 🏃");
+                const addColumnQuery = `
+                    ALTER TABLE users 
+                    ADD COLUMN failedLoginAttempts INT DEFAULT 0
+                `;
+                await connection.query(addColumnQuery);
+                const fillColumnQuery = `UPDATE users SET failedLoginAttempts = 0`
+                await connection.query(fillColumnQuery);
+                console.log("Column 'failedLoginAttempts' added successfully! ✨");
+            } else {
+                console.log("Column 'failedLoginAttempts' already exists. No action taken. 👍");
             }
 
             const [userCountRows] = await connection.execute(

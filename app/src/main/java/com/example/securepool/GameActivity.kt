@@ -41,8 +41,7 @@ class GameActivity : ComponentActivity() {
                     uiState = uiState,
                     onMatchResult = { outcome ->
                         viewModel.submitMatchResult(outcome) { finish() }
-                    },
-                    sendMessage = viewModel::sendMessage
+                    }
                 )
             }
         }
@@ -51,7 +50,7 @@ class GameActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameScreen(uiState: GameUiState, onMatchResult: (String) -> Unit, sendMessage: () -> Unit) {
+fun GameScreen(uiState: GameUiState, onMatchResult: (String) -> Unit) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Match: ${uiState.playerUsername} vs ${uiState.opponentUsername}") }) }
     ) { padding ->
@@ -66,7 +65,6 @@ fun GameScreen(uiState: GameUiState, onMatchResult: (String) -> Unit, sendMessag
                 Text("${uiState.playerUsername} Score: ${uiState.playerScore}")
                 Text("${uiState.opponentUsername} Score: ${uiState.opponentScore}")
                 Button(onClick = { onMatchResult("win") }) { Text("I Won") }
-                Button(onClick = { sendMessage() }) { Text("Send Message") }
                 Button(onClick = { onMatchResult("lose") }) { Text("I Lost") }
                 Button(onClick = { onMatchResult("exit") }) { Text("Exit Game") }
             }

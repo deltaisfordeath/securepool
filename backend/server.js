@@ -88,7 +88,7 @@ function createNewGame() {
     players: [],
     currentPlayer: null,
     gameState: 'Playing',
-    winnderId: null
+    winnerId: null
   };
 }
 
@@ -238,7 +238,7 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-app.post('/api/register', async (req, res) => {
+app.post('/auth/register', async (req, res) => {
   console.log('Registration request received:', req.body);
   
   const { username, password, publicKey } = req.body;
@@ -307,7 +307,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.post('/api/register-biometric', verifyJwt, async (req, res) => {
+app.post('/auth/register-biometric', verifyJwt, async (req, res) => {
   const userName = req.user?.id;
   console.log(`Registering biometric key for user: ${userName.toString()}`);
   const { publicKey } = req.body;
@@ -333,7 +333,7 @@ app.post('/api/register-biometric', verifyJwt, async (req, res) => {
   res.status(204).send({ message: 'Biometric key registered successfully.' });
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Missing credentials' });
@@ -347,10 +347,20 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ success: false });
     }
     const user = results[0];
+
+    if (user.failedLoginAttempts > 4) {
+      return res.status(403).json({success: false, message: "Account locked from too many failed login attempts"});
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      const failedSql = 'UPDATE users SET failedLoginAttempts = ? WHERE username = ?';
+      await db.query(failedSql, [user.failedLoginAttempts + 1, username]);
       return res.status(401).json({ success: false });
     }
+
+    const successSql = 'UPDATE users SET failedLoginAttempts = 0 WHERE username = ?';
+    await db.query(successSql, [username]);
 
     return getJwtTokenResponse(user, res);
   } catch (error) {
@@ -359,7 +369,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.get('/api/challenge', async (req, res) => {
+app.get('/auth/challenge', async (req, res) => {
   const { username } = req.query;
 
   const findUserSql = 'SELECT username FROM users WHERE username = ?';
@@ -395,7 +405,7 @@ app.get('/api/challenge', async (req, res) => {
   res.send({ challenge });
 });
 
-app.post('/api/challenge', async (req, res) => {
+app.post('/auth/challenge', async (req, res) => {
   const { userId, signedChallenge } = req.body;
 
   if (!userId || !signedChallenge) {
@@ -475,14 +485,10 @@ app.get('/api/score', verifyJwt, async (req, res) => {
   }
 });
 
-app.post('/api/matchResult', verifyJwt, async (req, res) => {
-  const { winner, loser, outcome } = req.body;
-  if (!winner || !loser || !outcome) {
-    return res.status(400).json({ error: 'Missing match data' });
-  }
-
-  const increaseSql = 'UPDATE users SET score = score + 10 WHERE username = ?';
-  const decreaseSql = `
+async function applyMatchResult(player, isWinner) {
+  const scoreSql = isWinner ?
+    'UPDATE users SET score = score + 10 WHERE username = ?' :
+    `
     UPDATE users 
     SET score = GREATEST(score - 10, 0), 
         lastZeroTimestamp = IF(score - 10 <= 0, NOW(), lastZeroTimestamp)
@@ -490,16 +496,12 @@ app.post('/api/matchResult', verifyJwt, async (req, res) => {
   `;
 
   try {
-    await db.query(increaseSql, [winner]);
-    await db.query(decreaseSql, [loser]);
-
-    res.json({ message: 'Match result synced successfully' });
+    await db.query(scoreSql, [player]);
 
   } catch (error) {
     console.error('Error syncing match result:', error);
-    return res.status(500).json({ error: 'Failed to sync match result' });
   }
-});
+}
 
 app.post('/api/restore-score', verifyJwt, async (req, res) => {
   const { username } = req.body;
@@ -534,7 +536,7 @@ app.get('/api/leaderboard', verifyJwt, async (req, res) => {
   }
 });
 
-app.post('api/token/refresh', (req, res) => {
+app.post('auth/token/refresh', (req, res) => {
   const { token } = req.body;
   if (token == null) return res.sendStatus(401);
 
@@ -683,6 +685,8 @@ wss.on('connection', (socket) => {
 
     if (finalGameState.gameState === "GameOver") {
       finalGameState.winnerId = socket.id;
+      applyMatchResult(socket.userData.id);
+      console.log(games);
     }
 
     wss.to(gameId).emit("gameStateUpdate", serializeGameState(finalGameState));

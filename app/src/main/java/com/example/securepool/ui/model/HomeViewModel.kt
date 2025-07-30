@@ -21,7 +21,6 @@ data class HomeUiState(
     val username: String = "",
     val score: Int = 0,
     val isLoading: Boolean = true,
-    val leaderboard: List<LeaderboardEntry> = emptyList(),
     val opponent: String? = null,
     val isBiometricAvailable: Boolean = false,
     val isBiometricRegistered: Boolean = false
@@ -76,14 +75,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 // Use the retrieved username for the API calls
                 val scoreResponse = apiService.getScore(username)
-                val leaderboardResponse = apiService.getLeaderboard()
 
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         username = username,
                         score = scoreResponse.body()?.score ?: 0,
-                        leaderboard = leaderboardResponse.body() ?: emptyList()
                     )
                 }
             } catch (e: Exception) {
@@ -139,10 +136,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     // TODO: handle opponent matching server side via websocket
     fun findOpponent(): String? {
         val currentUser = _uiState.value.username
-        val opponent = _uiState.value.leaderboard
-            .filter { it.username != currentUser && it.score > 0 }
-            .randomOrNull()?.username
-
-        return opponent
+        return "gamerd"
     }
 }

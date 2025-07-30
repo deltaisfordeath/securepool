@@ -39,7 +39,7 @@
             android:exported="false"
             android:theme="@style/Theme.SecurePool" />
         <activity
-            android:name=".PracticeActivity"
+            android:name=".ui.poolgame.PoolSimulatorActivity"
             android:exported="false"
             android:theme="@style/Theme.SecurePool" />
         <activity

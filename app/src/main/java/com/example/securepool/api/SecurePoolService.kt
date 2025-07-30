@@ -5,19 +5,19 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface SecurePoolService {
-    @POST("/api/register")
+    @POST("/auth/register")
     suspend fun registerUser(@Body request: RegisterRequest): Response<LoginResponse>
 
-    @POST("/api/register-biometric")
+    @POST("/auth/register-biometric")
     suspend fun registerBiometric(@Body request: BiometricRegisterRequest): Response<RegisterResponse>
 
-    @GET("/api/challenge")
+    @GET("/auth/challenge")
     suspend fun getChallenge(@Query("username") username: String): Response<ChallengeResponse>
 
-    @POST("/api/challenge")
+    @POST("/auth/challenge")
     suspend fun postChallenge(@Body request: SignedChallengeRequest): Response<LoginResponse>
 
-    @POST("/api/login")
+    @POST("/auth/login")
     suspend fun loginUser(@Body request: RegisterRequest): Response<LoginResponse>
 
     @GET("/api/score")
@@ -32,6 +32,6 @@ interface SecurePoolService {
     @POST("/api/matchResult")
     suspend fun sendMatchResult(@Body result: MatchResultRequest): Response<Unit>
 
-    @POST("/api/token/refresh")
+    @POST("/auth/token/refresh")
     suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<RefreshTokenResponse>
 }

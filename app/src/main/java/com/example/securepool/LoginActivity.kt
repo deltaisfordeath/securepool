@@ -222,7 +222,7 @@ fun LoginScreen(
                 Button(
                     onClick = onLoginClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
@@ -235,20 +235,25 @@ fun LoginScreen(
             if (uiState.isBiometricAvailable && uiState.isBiometricRegistered) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    Button(
-                        onClick = onBiometricLoginClicked,
-                        enabled = !uiState.isLoading && isUsernamePopulated,
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Text("Use Fingerprint")
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Icon(
-                                imageVector = Icons.Default.Fingerprint,
-                                contentDescription = "Login with fingerprint"
-                            )
+                        Button(
+                            onClick = onBiometricLoginClicked,
+                            enabled = !uiState.isLoading && isUsernamePopulated,
+                            modifier = Modifier.weight(1f).height(50.dp)
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                Text("Use Fingerprint")
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Fingerprint,
+                                    contentDescription = "Login with fingerprint"
+                                )
+                            }
                         }
                     }
                 }
@@ -256,11 +261,14 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
                 Button(
                     onClick = onRegisterClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

@@ -303,3 +303,47 @@
 [2025-07-29T23:36:50.967Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
 [2025-07-29T23:36:52.854Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
 [2025-07-29T23:36:52.953Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-29T23:57:52.704Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-29T23:57:56.544Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIGMDs5IttqJH6BTy6YXhl/0EnP/oqyn7/SAdX7B1fOmIAiEA83oIL2oPaX5urK6ONnEvfhHlahEPB+HZvqSWK2ylFeI=","userId":"kenny"}
+[2025-07-29T23:57:56.549Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-29T23:58:03.663Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-29T23:58:07.630Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIFyX5lEm63JehF1u2z6HPUrGuMk9iuLI6azw++9LcXhdAiEAzGJGhYRU4xTl1AC2189ehn1Zt3GoL0zBMdkqFpbFjeY=","userId":"kenny"}
+[2025-07-29T23:58:07.633Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-29T23:58:16.320Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-29T23:58:16.378Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-29T23:58:16.809Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:58:16.840Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:58:20.000Z] EVENT: WebSocket Connected socketId=FqPB1rJgYlGTwxwjAAAB
+[2025-07-29T23:59:36.944Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-29T23:59:37.468Z] EVENT: Client disconnected: FqPB1rJgYlGTwxwjAAAB, reason: client namespace disconnect
+[2025-07-30T00:00:00.717Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-30T00:00:00.780Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-30T00:00:01.088Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:00:01.151Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:06:22.177Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-30T00:06:24.802Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIQCE6uy3Qisy/733J7HuTrDE/scUohr5PxuDEU3V1zt6zAIgZd1+2wmuUgaKo7UqAs27fIGEa6+hsjpbfOPPRdhFdxE=","userId":"kenny"}
+[2025-07-30T00:06:24.804Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-30T00:06:26.062Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-30T00:06:30.215Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIQDIcxyilLyC64kkeu8+oZ7uJ/W/yneHHqVVaTLD5gpWygIgU65wsD7NHJFgpVysp2nx8bMOeCERYMn/jyIKyKz/qQ4=","userId":"kenny"}
+[2025-07-30T00:06:30.218Z] EVENT: Biometric Login userId=kenny result=invalid signature
+[2025-07-30T00:06:35.471Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-30T00:06:35.535Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-30T00:06:36.193Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:06:36.266Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:06:48.208Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-30T00:06:48.268Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-30T00:06:48.574Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:06:48.604Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:06:55.998Z] EVENT: HTTP Request method=POST url=/auth/register-biometric body={"publicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHWoyq3EusQa2edDIKW9hd6Mfiik8KRw/Qg1He78SBchcvQoHiD9CRvzzdknIo6bNpFfiTmXyUU/zJ6cr5mwPNw=="}
+[2025-07-30T00:07:02.171Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-30T00:07:08.880Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEYCIQCFlqMLF9a2s6x2mcSS82tZNexDmG8TMKZ07AThRq1uLQIhANADswHnVOB0tNH7fWQMog1t7UNkQB8t4hNFukNv/Ewv","userId":"kenny"}
+[2025-07-30T00:07:08.882Z] EVENT: Biometric Login userId=kenny result=success
+[2025-07-30T00:07:09.210Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:07:09.237Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:07:11.781Z] EVENT: WebSocket Connected socketId=-1zPuRRVJpwjzSX4AAAD
+[2025-07-30T00:07:27.003Z] EVENT: Client -1zPuRRVJpwjzSX4AAAD taking shot in game practice_-1zPuRRVJpwjzSX4AAAD with angle 0.90005493 and power 0.7599506
+[2025-07-30T00:07:30.131Z] EVENT: Client disconnected: -1zPuRRVJpwjzSX4AAAD, reason: client namespace disconnect
+[2025-07-30T00:07:30.282Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-30T00:07:34.082Z] EVENT: WebSocket Connected socketId=8SuFnPpor2MQshaoAAAF
+[2025-07-30T00:07:38.930Z] EVENT: Client disconnected: 8SuFnPpor2MQshaoAAAF, reason: client namespace disconnect
+[2025-07-30T00:07:39.082Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}

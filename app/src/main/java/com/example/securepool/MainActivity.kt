@@ -1,6 +1,6 @@
 package com.example.securepool
 
-import SecurePoolHomeScreen
+import com.example.securepool.SecurePoolHomeScreen
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -55,7 +55,8 @@ class MainActivity : ComponentActivity() {
                     onRestoreScore = { viewModel.restoreScore() },
                     onFindOpponent = { viewModel.findOpponent() },
                     onRefresh = { viewModel.loadData() },
-                    onRegisterBiometric = {viewModel.registerBiometricKey()}
+                    onRegisterBiometric = {viewModel.registerBiometricKey()},
+                    removeBiometricLogin = {viewModel.removeBiometricKey()}
                 )
             }
         }

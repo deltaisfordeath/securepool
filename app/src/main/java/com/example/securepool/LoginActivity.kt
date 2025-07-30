@@ -29,6 +29,7 @@ import com.example.securepool.ui.model.LoginUiState
 import com.example.securepool.ui.model.LoginViewModel
 import com.example.securepool.ui.theme.SecurePoolTheme
 import com.example.securepool.ui.NavigationEvent
+import com.example.securepool.security.AuditLogger // <-- added
 
 class LoginActivity : FragmentActivity() {
     private val viewModel: LoginViewModel by viewModels()
@@ -58,7 +59,6 @@ class LoginActivity : FragmentActivity() {
                     }
                 }
 
-                // Step 3: Listen for the request from the ViewModel, which now includes the challenge
                 LaunchedEffect(Unit) {
                     viewModel.showBiometricPromptRequest.collect { challenge ->
                         try {
@@ -74,14 +74,35 @@ class LoginActivity : FragmentActivity() {
                         }
                     }
                 }
+                // ✅ Add this block
+                LaunchedEffect(Unit) {
+                    viewModel.rateLimitEvent.collect {
+                        Toast.makeText(this@LoginActivity, "Too many login attempts. Please try again later.", Toast.LENGTH_LONG).show()
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    viewModel.registerRateLimitEvent.collect {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Too many registration attempts. Please try again later.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
 
                 LoginScreen(
                     uiState = uiState,
                     onUsernameChange = viewModel::onUsernameChange,
                     onPasswordChange = viewModel::onPasswordChange,
                     onPasswordVisibilityChange = viewModel::onPasswordVisibilityChange,
-                    onLoginClicked = viewModel::loginUser,
-                    onBiometricLoginClicked = viewModel::onBiometricLoginClicked,
+                    onLoginClicked = {
+                        AuditLogger.logEvent("Login Attempt", mapOf("method" to "password", "username" to uiState.username))
+                        viewModel.loginUser()
+                    },
+                    onBiometricLoginClicked = {
+                        AuditLogger.logEvent("Biometric Login Attempt", mapOf("username" to uiState.username))
+                        viewModel.onBiometricLoginClicked()
+                    },
                     onRegisterClicked = viewModel::registerUser
                 )
             }
@@ -104,6 +125,7 @@ class LoginActivity : FragmentActivity() {
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
+                    AuditLogger.logEvent("Biometric Auth Error", mapOf("code" to errorCode.toString(), "message" to errString.toString()))
                     if (errorCode != BiometricPrompt.ERROR_USER_CANCELED && errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
                         Toast.makeText(applicationContext, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
                     }
@@ -116,7 +138,7 @@ class LoginActivity : FragmentActivity() {
                         try {
                             val signedChallengeBytes = signature.sign()
                             val signedChallengeBase64 = Base64.encodeToString(signedChallengeBytes, Base64.NO_WRAP)
-                            // Step 4: Pass the signed result back to the ViewModel
+                            AuditLogger.logEvent("Biometric Authentication Succeeded", mapOf("username" to viewModel.uiState.value.username))
                             viewModel.loginWithSignedChallenge(signedChallengeBase64)
                         } catch (e: Exception) {
                             Log.e("LoginActivity", "Error signing challenge", e)
@@ -130,6 +152,7 @@ class LoginActivity : FragmentActivity() {
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
+                    AuditLogger.logEvent("Biometric Auth Failed", mapOf("username" to viewModel.uiState.value.username))
                     Toast.makeText(applicationContext, "Authentication failed", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -154,7 +177,6 @@ fun LoginScreen(
     onBiometricLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit
 ) {
-
     val isUsernamePopulated = uiState.username.isNotBlank()
     val isPasswordPopulated = uiState.password.isNotBlank()
 
@@ -193,15 +215,14 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
+
+            Row(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = onLoginClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
@@ -213,29 +234,33 @@ fun LoginScreen(
 
             if (uiState.isBiometricAvailable && uiState.isBiometricRegistered) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Button(
-                        onClick = onBiometricLoginClicked,
-                        enabled = !uiState.isLoading && isUsernamePopulated,
-                        modifier = Modifier.weight(1f)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Text("Use Fingerprint")
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Icon(
-                                imageVector = Icons.Default.Fingerprint, // Add this icon to your imports
-                                contentDescription = "Login with fingerprint"
-                            )
+                        Button(
+                            onClick = onBiometricLoginClicked,
+                            enabled = !uiState.isLoading && isUsernamePopulated,
+                            modifier = Modifier.weight(1f).height(50.dp)
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                Text("Use Fingerprint")
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Fingerprint,
+                                    contentDescription = "Login with fingerprint"
+                                )
+                            }
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -243,7 +268,7 @@ fun LoginScreen(
                 Button(
                     onClick = onRegisterClicked,
                     enabled = !uiState.isLoading && isUsernamePopulated && isPasswordPopulated,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

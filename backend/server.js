@@ -237,8 +237,8 @@ app.get('/', (req, res) => {
 
 // Test endpoint to verify certificate pinning is working
 app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'Certificate pinning test successful!', 
+  res.json({
+    message: 'Certificate pinning test successful!',
     timestamp: new Date().toISOString(),
     database_connected: !!db
   });
@@ -246,7 +246,7 @@ app.get('/api/test', (req, res) => {
 
 app.post('/auth/register', async (req, res) => {
   console.log('Registration request received:', req.body);
-  
+
   const { username, password, publicKey } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Missing credentials' });
@@ -273,10 +273,10 @@ app.post('/auth/register', async (req, res) => {
 
       const findUserSql = 'SELECT username, score, lastZeroTimestamp FROM users WHERE username = ?';
       const [newUser] = await db.query(findUserSql, [username]);
-      
+
       console.log('New user registered:', newUser[0]);
       logAuditEvent("User Registered", { username, success: "true" });
-      await logAudit(username, 'Registration Success', req);
+      await logAudit(username, 'Registration Success', req, db);
 
       return getJwtTokenResponse(newUser[0], res);
     } catch (error) {
@@ -286,14 +286,14 @@ app.post('/auth/register', async (req, res) => {
   } else {
     // In-memory storage fallback for testing
     console.log('Using in-memory storage for user registration');
-    
+
     if (memoryUsers.has(username)) {
       return res.json({ success: false, message: 'Username already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
     const pwHash = await bcrypt.hash(password, salt);
-    
+
     const user = {
       username: username,
       password: pwHash,
@@ -301,13 +301,13 @@ app.post('/auth/register', async (req, res) => {
       lastZeroTimestamp: null,
       publicKey: publicKey || null
     };
-    
+
     memoryUsers.set(username, user);
     console.log('New user registered in memory:', user.username);
-    
+
     // Generate a simple JWT-like response for testing
     const testToken = Buffer.from(JSON.stringify({ username, timestamp: Date.now() })).toString('base64');
-    
+
     return res.json({
       success: true,
       message: 'User registered successfully (in-memory mode)',
@@ -360,7 +360,7 @@ app.post('/auth/login', async (req, res) => {
     const user = results[0];
 
     if (user.failedLoginAttempts > 4) {
-      return res.status(403).json({success: false, message: "Account locked from too many failed login attempts"});
+      return res.status(403).json({ success: false, message: "Account locked from too many failed login attempts" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -372,7 +372,7 @@ app.post('/auth/login', async (req, res) => {
     }
 
     logAuditEvent("Login Attempt", { username, result: "success" });
-    await logAudit(username, 'Login Success', req);
+    await logAudit(username, 'Login Success', req, db);
 
     const successSql = 'UPDATE users SET failedLoginAttempts = 0 WHERE username = ?';
     await db.query(successSql, [username]);
@@ -705,7 +705,7 @@ wss.on('connection', (socket) => {
     games[gameId] = finalGameState;
 
     if (finalGameState.gameState === "GameOver") {
-      logAuditEvent(`Game ${gameId} won by ${socket.userData.id}`, {gameData: games[gameId]});
+      logAuditEvent(`Game ${gameId} won by ${socket.userData.id}`, { gameData: games[gameId] });
       finalGameState.winnerId = socket.id;
       applyMatchResult(socket.userData.id);
       console.log(games);

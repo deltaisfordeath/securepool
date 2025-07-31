@@ -188,10 +188,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
-                val publicKey = when {
-                    _uiState.value.isBiometricRegistered -> biometricKeyManager.generateKeyPair()
-                    else -> null
-                }
+                val publicKey = null
 
                 val request =
                     RegisterRequest(currentState.username, currentState.password, publicKey)

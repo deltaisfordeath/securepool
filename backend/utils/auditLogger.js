@@ -1,6 +1,5 @@
-import db from '../initializeDatabase.js';
 
-export async function logAudit(username, action, req) {
+export async function logAudit(username, action, req, db) {
   try {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';

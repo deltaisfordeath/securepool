@@ -347,3 +347,129 @@
 [2025-07-30T00:07:34.082Z] EVENT: WebSocket Connected socketId=8SuFnPpor2MQshaoAAAF
 [2025-07-30T00:07:38.930Z] EVENT: Client disconnected: 8SuFnPpor2MQshaoAAAF, reason: client namespace disconnect
 [2025-07-30T00:07:39.082Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T17:46:37.628Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-31T17:46:37.742Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-31T17:46:38.122Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T17:46:38.197Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:06:54.495Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-31T18:06:54.598Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-31T18:06:54.823Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:06:54.854Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:16:42.374Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-31T18:16:42.462Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-31T18:16:42.778Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:16:42.853Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:46:35.558Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:46:36.457Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:47:15.634Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"a123","username":"gamerA"}
+[2025-07-31T18:47:15.818Z] EVENT: Login Attempt username=gamerA result=success
+[2025-07-31T18:47:16.378Z] EVENT: HTTP Request method=GET url=/api/score?username=gamerA body={}
+[2025-07-31T18:47:16.456Z] EVENT: HTTP Request method=GET url=/api/score?username=gamerA body={}
+[2025-07-31T18:47:17.860Z] EVENT: WebSocket Connected socketId=VH6m7lfJo1NlhG-tAAAD
+[2025-07-31T18:47:42.275Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:47:53.861Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-31T18:47:53.964Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-31T18:47:54.272Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:47:54.276Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:47:56.148Z] EVENT: WebSocket Connected socketId=46z7eV9zF-z8h-ndAAAH
+[2025-07-31T18:47:57.993Z] EVENT: Match Started player1=gamerA player2=kenny
+[2025-07-31T18:48:49.488Z] EVENT: Client VH6m7lfJo1NlhG-tAAAD taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 0.4000244 and power 0.8972115
+[2025-07-31T18:49:10.441Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 154.3899 and power 0.8282715
+[2025-07-31T18:49:34.891Z] EVENT: Client VH6m7lfJo1NlhG-tAAAD taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 157.2185 and power 0.8972115
+[2025-07-31T18:49:48.249Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle -5.281897 and power 1
+[2025-07-31T18:50:01.382Z] EVENT: Client VH6m7lfJo1NlhG-tAAAD taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle -156.75072 and power 0.8972115
+[2025-07-31T18:50:17.600Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 2.684082 and power 1
+[2025-07-31T18:50:37.960Z] EVENT: Client VH6m7lfJo1NlhG-tAAAD taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 191.76282 and power 0.8972115
+[2025-07-31T18:50:52.927Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game 30199a06-3327-4695-bf8e-0627b72877e4 with angle 342.53992 and power 1
+[2025-07-31T18:50:52.931Z] EVENT: Game 30199a06-3327-4695-bf8e-0627b72877e4 won by kenny gameData=[object Object]
+[2025-07-31T18:51:42.186Z] EVENT: Client disconnected: VH6m7lfJo1NlhG-tAAAD, reason: client namespace disconnect
+[2025-07-31T18:51:42.516Z] EVENT: HTTP Request method=GET url=/api/score?username=gamerA body={}
+[2025-07-31T18:52:05.866Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game practice_46z7eV9zF-z8h-ndAAAH with angle 0.8000488 and power 1
+[2025-07-31T18:52:18.161Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game practice_46z7eV9zF-z8h-ndAAAH with angle 155.9172 and power 1
+[2025-07-31T18:52:31.336Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game practice_46z7eV9zF-z8h-ndAAAH with angle -24.866966 and power 1
+[2025-07-31T18:52:45.288Z] EVENT: Client 46z7eV9zF-z8h-ndAAAH taking shot in game practice_46z7eV9zF-z8h-ndAAAH with angle 152.63928 and power 1
+[2025-07-31T18:52:45.290Z] EVENT: Game practice_46z7eV9zF-z8h-ndAAAH won by kenny gameData=[object Object]
+[2025-07-31T18:52:56.065Z] EVENT: Client disconnected: 46z7eV9zF-z8h-ndAAAH, reason: client namespace disconnect
+[2025-07-31T18:52:56.286Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:53:03.342Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:53:07.639Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:53:13.149Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:53:21.906Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:53:24.502Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:53:25.481Z] EVENT: WebSocket Connected socketId=f6LurbOxRc0EZk0uAAAJ
+[2025-07-31T18:53:29.612Z] EVENT: Client disconnected: f6LurbOxRc0EZk0uAAAJ, reason: client namespace disconnect
+[2025-07-31T18:53:29.709Z] EVENT: WebSocket Connected socketId=xowkIx1qOrjKmc33AAAL
+[2025-07-31T18:53:37.300Z] EVENT: Client xowkIx1qOrjKmc33AAAL taking shot in game practice_xowkIx1qOrjKmc33AAAL with angle 0.90005493 and power 0.5
+[2025-07-31T18:53:51.788Z] EVENT: Client xowkIx1qOrjKmc33AAAL taking shot in game practice_xowkIx1qOrjKmc33AAAL with angle 239.76318 and power 0.5
+[2025-07-31T18:54:40.028Z] EVENT: Client disconnected: xowkIx1qOrjKmc33AAAL, reason: client namespace disconnect
+[2025-07-31T18:54:40.149Z] EVENT: WebSocket Connected socketId=J36F6j7EI401gYFsAAAN
+[2025-07-31T18:54:42.371Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:54:42.787Z] EVENT: Client disconnected: J36F6j7EI401gYFsAAAN, reason: client namespace disconnect
+[2025-07-31T18:55:18.817Z] EVENT: HTTP Request method=POST url=/auth/login body={"password":"password","username":"kenny"}
+[2025-07-31T18:55:18.912Z] EVENT: Login Attempt username=kenny result=success
+[2025-07-31T18:55:19.070Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:55:19.095Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:55:22.903Z] EVENT: HTTP Request method=POST url=/auth/register-biometric body={"publicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERlBjhQm+PkOuqE0i2aIhYf81uTBoXah2Kw33d4eO7fAKs9Tny3RS634jHavVRrVOXxoVfRtxKJpjuJf8znkLmA=="}
+[2025-07-31T18:55:29.410Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-31T18:55:34.149Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIGNyidQ5230Nm34Pe5hF3WI0KW0OdhdfQEavAOUfyJowAiEA/cLI5YZVoHhyBmVzuH9U8Oyl5Vah84o2m4BoyCMATj8=","userId":"kenny"}
+[2025-07-31T18:55:34.161Z] EVENT: Biometric Login userId=kenny result=success
+[2025-07-31T18:55:34.435Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:55:34.475Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:55:38.125Z] EVENT: WebSocket Connected socketId=oWN0JeNx95Msj47wAAAP
+[2025-07-31T18:55:47.047Z] EVENT: Client disconnected: oWN0JeNx95Msj47wAAAP, reason: client namespace disconnect
+[2025-07-31T18:55:47.197Z] EVENT: WebSocket Connected socketId=X5az-qk8gOUXSHxJAAAR
+[2025-07-31T18:55:56.511Z] EVENT: Client X5az-qk8gOUXSHxJAAAR taking shot in game practice_X5az-qk8gOUXSHxJAAAR with angle 0.7000427 and power 0.8882419
+[2025-07-31T18:56:01.823Z] EVENT: Client disconnected: X5az-qk8gOUXSHxJAAAR, reason: client namespace disconnect
+[2025-07-31T18:56:02.066Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:56:09.174Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-31T18:56:12.884Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIQDFOvl+Af+EyX4VfFF/2fBMU1bq1B0h/OybHufeMmGdMwIgbTGsz+JYQQ6t1rOjAM36qvMIWGNayebi9JTnscWaikQ=","userId":"kenny"}
+[2025-07-31T18:56:12.889Z] EVENT: Biometric Login userId=kenny result=success
+[2025-07-31T18:56:13.284Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:56:13.400Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:56:16.625Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:56:57.156Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:57:10.202Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:57:12.061Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:57:14.046Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:57:16.489Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:57:18.827Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:57:21.368Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:57:28.582Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:57:32.725Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T18:57:36.738Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T18:57:40.511Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:04.007Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-31T21:06:08.374Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEYCIQCxW6KS+RlfYBZDE7zhbvu+1wtCMaoyfc077orhqGEdVgIhAMeBwhiWH6Aic7MZqb6zaiYmcuzHoI6RL0RuBlcs5bFx","userId":"kenny"}
+[2025-07-31T21:06:08.384Z] EVENT: Biometric Login userId=kenny result=success
+[2025-07-31T21:06:08.886Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:08.895Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:13.309Z] EVENT: WebSocket Connected socketId=jzTG2aFYzFlqEY9oAAAT
+[2025-07-31T21:06:17.547Z] EVENT: Client jzTG2aFYzFlqEY9oAAAT taking shot in game practice_jzTG2aFYzFlqEY9oAAAT with angle 0.5000305 and power 0.5
+[2025-07-31T21:06:29.067Z] EVENT: Client jzTG2aFYzFlqEY9oAAAT taking shot in game practice_jzTG2aFYzFlqEY9oAAAT with angle -120.74425 and power 0.9274646
+[2025-07-31T21:06:34.141Z] EVENT: Client disconnected: jzTG2aFYzFlqEY9oAAAT, reason: client namespace disconnect
+[2025-07-31T21:06:34.251Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:36.809Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T21:06:39.114Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:41.437Z] EVENT: WebSocket Connected socketId=kR9C9cPiXyq5Ws_gAAAV
+[2025-07-31T21:06:46.419Z] EVENT: Client disconnected: kR9C9cPiXyq5Ws_gAAAV, reason: client namespace disconnect
+[2025-07-31T21:06:46.512Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:47.530Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}
+[2025-07-31T21:06:48.920Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:50.014Z] EVENT: WebSocket Connected socketId=wC00CeKDOTFQaWpKAAAX
+[2025-07-31T21:06:54.850Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:06:55.277Z] EVENT: Client disconnected: wC00CeKDOTFQaWpKAAAX, reason: client namespace disconnect
+[2025-07-31T21:34:04.185Z] EVENT: HTTP Request method=POST url=/auth/register body={"password":"password","username":"kenny"}
+[2025-07-31T21:34:04.368Z] EVENT: User Registered username=kenny success=true
+[2025-07-31T21:34:04.829Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:34:04.871Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:34:07.014Z] EVENT: HTTP Request method=POST url=/auth/register-biometric body={"publicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEVqa/cvK0mOSNA/azHp30R3mjjLT0OgWD1VpLcXHJEK+vqbUb8I4meP4yiwfe2Q3XfqyTr51xh2TjfKJ0o02Osw=="}
+[2025-07-31T21:34:11.435Z] EVENT: HTTP Request method=GET url=/auth/challenge?username=kenny body={}
+[2025-07-31T21:34:14.585Z] EVENT: HTTP Request method=POST url=/auth/challenge body={"signedChallenge":"MEUCIQCEcf+FDsHRUIO3/cua7lyjAmF0zHGWckkSCSFajOp42gIgL92G7CPdCNBDITN2ZegzeFd5X0cJNKEF/WTv4DHcBHc=","userId":"kenny"}
+[2025-07-31T21:34:14.595Z] EVENT: Biometric Login userId=kenny result=success
+[2025-07-31T21:34:14.934Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:34:14.960Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:34:17.837Z] EVENT: WebSocket Connected socketId=pw-Q62bRqgKuXbpWAAAB
+[2025-07-31T21:34:21.945Z] EVENT: Client pw-Q62bRqgKuXbpWAAAB taking shot in game practice_pw-Q62bRqgKuXbpWAAAB with angle 0.5000305 and power 0.5
+[2025-07-31T21:34:24.822Z] EVENT: HTTP Request method=GET url=/api/score?username=kenny body={}
+[2025-07-31T21:34:25.410Z] EVENT: Client disconnected: pw-Q62bRqgKuXbpWAAAB, reason: client namespace disconnect
+[2025-07-31T21:34:25.740Z] EVENT: HTTP Request method=GET url=/api/leaderboard body={}

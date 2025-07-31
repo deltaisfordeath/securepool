@@ -34,6 +34,17 @@ const createChallengeTableQuery = `
     );
 `;
 
+const createAuditLogsTableQuery = `
+  CREATE TABLE audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100),
+    action VARCHAR(255),
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+`;
+
 let salt = await bcrypt.genSalt(10);
 const gamer1pw = await bcrypt.hash('a123', salt);
 const gamer2pw = await bcrypt.hash('b123', salt);
@@ -151,6 +162,16 @@ export default async function initializeDatabase() {
 
         } else {
             console.log('Table "challenges" already exists.');
+        }
+
+        // AUDIT LOGS TABLE
+        const [auditLogRows] = await connection.execute(`SHOW TABLES LIKE 'audit_logs';`);
+        if (auditLogRows.length === 0) {
+            console.log('🆕 Creating table "audit_logs"...');
+            await connection.execute(createAuditLogsTableQuery);
+            console.log('✅ Table "audit_logs" created.');
+        } else {
+            console.log('✅ Table "audit_logs" already exists.');
         }
 
         return connection;

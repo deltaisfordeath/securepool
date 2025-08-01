@@ -17,45 +17,15 @@ Purpose: To design an insecure Android application, identify and model threats, 
 - OpenSSL (for certificate operations)
 
 ## Backend Server Setup
-1. **Install Dependencies:**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-2. **Database Configuration:**
-   - **MySQL Setup**: Ensure MySQL is installed and running
-   - **Database Creation**: Run `initializeDatabase.js` to create the database:
-     ```bash
-     node initializeDatabase.js
-     ```
-   - **Update Credentials**: Edit `connectionProperties` in `initializeDatabase.js`:
-     ```javascript
-     const connectionProperties = {
-         host: 'localhost',
-         port: 3306,           // Your MySQL port
-         user: 'root',         // Your MySQL username  
-         password: 'abcdef',   // Your MySQL password
-     }
-     ```
-
-## Backend Server  
 - From the `backend` directory, run `npm install`  
 - Run `cp .env.example .env` to copy the template .env file.
-- Populate the `.env` file with your secret keys and connection properties (can be left as-is for dev environment)  
+- Populate the `.env` file with your secret keys and database connection properties
 - Run `npm run start` to start the server, or `npm run dev` for hot reloading of server.js changes.
 - Server runs on `https://localhost:443` with SSL/TLS
 - Development certificate (self-signed) located at `backend/dev_cert/securepool_cert.pem`. Production must have a certificate signed by a valid CA.
 
 ## Android Application
 
-### 🔐 Certificate Pinning (NEW - Automatic)
-**No manual certificate installation needed!** The app now includes:
-- Built-in certificate pinning using SHA-256 hash: `LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=`
-- Certificate file automatically bundled in app assets
-- Custom SSL validation that bypasses system certificate store
-
-### Running the App
 1. **Using Android Studio (Recommended):**
    - Open project in Android Studio
    - Start an emulator or connect a device
@@ -79,11 +49,17 @@ Purpose: To design an insecure Android application, identify and model threats, 
    adb logcat | findstr "Certificate\|Pinning\|SecurePool"
    ```
 
+### 🔐 Certificate Pinning (NEW - Automatic)
+**No manual certificate installation needed!** The app now includes:
+- Built-in certificate pinning using SHA-256 hash: `LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=` (development only, replace with CA signed certificate/hash for production)
+- Certificate file automatically bundled in app assets
+- Custom SSL validation that bypasses system certificate store
+
 ## Testing Certificate Pinning
 
 ### Expected Log Output:
 ```
-D/CertificateUtils: Certificate SHA-256 Hash: sha256:LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY=
+D/CertificateUtils: Certificate SHA-256 Hash: sha256:LQYY6Uo/fFj1qLoDm9ZYbW0xBSEfSHzof5qrxvNheTY= //default development certificate
 I/CertificatePinning: Certificate pinning enabled
 I/CertificatePinning: Certificate pinning is working correctly
 ```

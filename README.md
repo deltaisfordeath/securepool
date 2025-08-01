@@ -17,12 +17,13 @@ Purpose: To design an insecure Android application, identify and model threats, 
 - OpenSSL (for certificate operations)
 
 ## Backend Server Setup
-- From the `backend` directory, run `npm install`  
-- Run `cp .env.example .env` to copy the template .env file.
-- Populate the `.env` file with your secret keys and database connection properties
-- Run `npm run start` to start the server, or `npm run dev` for hot reloading of server.js changes.
-- Server runs on `https://localhost:443` with SSL/TLS
-- Development certificate (self-signed) located at `backend/dev_cert/securepool_cert.pem`. Production must have a certificate signed by a valid CA.
+1. From the `backend` directory, run `npm install`  
+2. Run `cp .env.example .env` to copy the template .env file.
+3. Populate the `.env` file with your secret keys and database connection properties.
+4. Ensure that MySQL is installed and running.
+5. Run `npm run start` to start the server, or `npm run dev` for hot reloading of server.js changes.
+6. Server runs on `https://localhost:443` with SSL/TLS.
+7. Development certificate (self-signed) located at `backend/dev_cert/securepool_cert.pem`. Production must have a certificate signed by a valid CA. Updated certificates must be named `securepool_cert.pem` and saved in `backend/dev_cert` **AND** `app/src/main/assets` (for certificate pinning hash generation).
 
 ## Android Application
 
@@ -48,6 +49,14 @@ Purpose: To design an insecure Android application, identify and model threats, 
    # Watch for certificate pinning logs
    adb logcat | findstr "Certificate\|Pinning\|SecurePool"
    ```
+
+## Enabling Biometric Authentication
+1. Ensure that your Android Device supports Biometric Authentication.
+2. Ensure that a Biometric fingerprint is registered in your Android Device Settings.
+3. Launch the SecurePool app and register with a username and password (password is necessary for account recovery when switching Android Devices/Biometric Keys)
+4. From the SecurePool home screen, click `Enable Biometric Login`
+5. Close and re-launch the SecurePool application
+6. Ensure the correct username is input and click `Use Fingerprint` to log in!
 
 ### 🔐 Certificate Pinning (NEW - Automatic)
 **No manual certificate installation needed!** The app now includes:
